@@ -1,5 +1,6 @@
 package de.srh.toolify.frontend.views.helloworld;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -12,6 +13,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 
+import de.srh.toolify.frontend.client.RestClient;
+import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.views.MainLayout;
 import de.srh.toolify.frontend.views.products.ProductsView;
 
@@ -26,10 +29,14 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
     Button loginButton = new Button();
     VerticalLayout layoutColumn2 = new VerticalLayout();
     
-    ProductsView products = new ProductsView();
+    ProductsView productsView;
     
     public HelloToolifyView() {
-        getContent().setWidth("100%");
+    	RestClient client = new RestClient();
+    	ResponseData resp = client.requestHttpToJsonNode("GET", "http://localhost:8080/private/admin/products/all", null, null);
+    	JsonNode products = resp.getNode();
+    	
+    	getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
         layoutRow.setWidthFull();
         getContent().setFlexGrow(1.0, layoutRow);
@@ -56,7 +63,8 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
         layoutRow.add(registerButton);
         layoutRow.add(loginButton);
         layoutRow.setJustifyContentMode(JustifyContentMode.END);
-        layoutColumn2.add(products);
+        productsView = new ProductsView(products);
+        layoutColumn2.add(productsView);
         getContent().add(layoutColumn2);
 
     }

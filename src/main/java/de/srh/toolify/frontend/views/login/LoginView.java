@@ -1,5 +1,7 @@
 package de.srh.toolify.frontend.views.login;
 
+import java.io.IOException;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,7 +32,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 
+import de.srh.toolify.frontend.client.RestClient;
 import de.srh.toolify.frontend.data.LoginRequest;
+import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.data.User;
 import de.srh.toolify.frontend.views.MainLayout;
 
@@ -100,9 +104,37 @@ public class LoginView extends Composite<VerticalLayout> {
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return;
 		}
-		authenticate(user.getEmail(), user.getPassword());
-		
-	}
+		//authenticate(user.getEmail(), user.getPassword());
+    	RestClient client = new RestClient();
+    	ResponseData resp = client.requestHttpToJsonNode("POST", "http://localhost:8080/public/api/login/user", new LoginRequest(user.getEmail(), user.getPassword()), LoginRequest.class);
+    	
+    	// Check the response and handle accordingly
+        try {
+			if (resp.getConnection().getResponseCode() == 202) {
+			    // Authentication successful, store the token in the Vaadin session
+			    String token;
+			    token = resp.getConnection().getResponseMessage();
+			    VaadinSession.getCurrent().setAttribute("authToken", token);
+			    
+			    Notification notification = Notification.show("Login successful");
+				notification.setDuration(5000);
+				notification.setPosition(Position.TOP_CENTER);
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				
+			    // Navigate to the secured part of your Vaadin application
+			    UI.getCurrent().navigate("home");
+			} else {
+			    // Authentication failed, show an error message
+				Notification notification = Notification.show("Login failed. Please try with correct email and password.");
+				notification.setDuration(5000);
+				notification.setPosition(Position.TOP_CENTER);
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
     
     private void authenticate(String email, String password) {
         // Make a request to Spring Boot backend for authentication
@@ -138,7 +170,7 @@ public class LoginView extends Composite<VerticalLayout> {
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 			
             // Navigate to the secured part of your Vaadin application
-            UI.getCurrent().navigate("hello");
+            UI.getCurrent().navigate("home");
         } else {
             // Authentication failed, show an error message
             Notification.show("Authentication failed", 3000, Position.TOP_CENTER);
