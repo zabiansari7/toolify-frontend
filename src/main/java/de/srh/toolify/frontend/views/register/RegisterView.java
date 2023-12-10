@@ -147,7 +147,7 @@ public class RegisterView extends Composite<VerticalLayout> {
 		} else {
 			//sendData(binder.getBean());
 			RestClient client = new RestClient();
-			ResponseData resp = client.requestHttpToJsonNode("POST", "http://localhost:8080/public/api/users/user", binder.getBean(), User.class);
+			ResponseData resp = client.requestHttpToJsonNode("POST", "http://localhost:8080/public/users/user", binder.getBean(), User.class);
 			int responseCode = 0;
 			try {
 				responseCode = resp.getConnection().getResponseCode();
