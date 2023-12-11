@@ -1,4 +1,4 @@
-package de.srh.toolify.frontend.views.helloworld;
+package de.srh.toolify.frontend.views.home;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.flow.component.Composite;
@@ -20,7 +20,7 @@ import de.srh.toolify.frontend.views.products.ProductsView;
 
 @PageTitle("Home | Toolify")
 @Route(value = "home", layout = MainLayout.class)
-public class HelloToolifyView extends Composite<VerticalLayout> {
+public class ToolifyHomeView extends Composite<VerticalLayout> {
 
 	private static final long serialVersionUID = 1L;
 	HorizontalLayout layoutRow = new HorizontalLayout();
@@ -31,7 +31,7 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
     
     ProductsView productsView;
     
-    public HelloToolifyView() {
+    public ToolifyHomeView() {
     	RestClient client = new RestClient();
     	ResponseData resp = client.requestHttpToJsonNode("GET", "http://localhost:8080/private/admin/products/all", null, null);
     	JsonNode products = resp.getNode();
