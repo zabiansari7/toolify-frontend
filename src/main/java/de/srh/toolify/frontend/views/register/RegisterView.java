@@ -31,6 +31,7 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
@@ -88,12 +89,28 @@ public class RegisterView extends Composite<VerticalLayout> {
         mobile.setLabel("Mobile");
         mobile.setRequiredIndicatorVisible(true);
         mobile.setMaxLength(11);
+        mobile.setValueChangeMode(ValueChangeMode.EAGER);
+        mobile.setPattern("^\\+\\d{0,11}$");
+        mobile.addValueChangeListener(event -> {
+            String value = event.getValue();
+            boolean isValid = value.matches("^\\+\\d{0,11}$");
+            mobile.setInvalid(!isValid);
+            if (isValid) {
+            	mobile.setHelperText("");
+			} else {
+				mobile.setHelperText("Mobile number should start with '+' and then only 11 numbers");
+			}
+            
+        });
+//        binder.forField(mobile)
+//        	.withValidator(this::isValidMobileNumber, "Mobile number should start with '+' and only 11 numbers")
+//        	.bind(User::getMobile, User::setMobile);
         password.setLabel("Password");
         password.setWidth("min-content");
         password.setRequiredIndicatorVisible(true);
         binder.forField(password)
-        .withValidator(this::isValidPassword, "Password must have at least 8 characters, one capital letter, one special character, and one digit.")
-        .bind(User::getPassword, User::setPassword);
+        	.withValidator(this::isValidPassword, "Password must have at least 8 characters, one capital letter, one special character, and one digit.")
+        	.bind(User::getPassword, User::setPassword);
         
         repeatPassword.setLabel("Repeat Password");
         repeatPassword.setWidth("min-content");
@@ -147,6 +164,12 @@ public class RegisterView extends Composite<VerticalLayout> {
 	    String passwordRegex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$";
 	    return value.matches(passwordRegex);
 	}
+	
+	private boolean isValidMobileNumber(String value) {
+	    String mobileNumberRegex = "^\\\\+\\\\d{0,15}$";
+	    return value.matches(mobileNumberRegex);
+	}
+
 
 	private void onRegister(
 			Binder<User> binder) {
