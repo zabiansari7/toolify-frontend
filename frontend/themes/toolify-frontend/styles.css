@@ -3,3 +3,7 @@
 .clickable-button {
     cursor: pointer;
 }
+
+.helper-text {
+	color: "red";
+}

@@ -1,17 +1,7 @@
 package de.srh.toolify.frontend.views.register;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -99,12 +89,10 @@ public class RegisterView extends Composite<VerticalLayout> {
             	mobile.setHelperText("");
 			} else {
 				mobile.setHelperText("Mobile number should start with '+' and then only 11 numbers");
+				
 			}
             
         });
-//        binder.forField(mobile)
-//        	.withValidator(this::isValidMobileNumber, "Mobile number should start with '+' and only 11 numbers")
-//        	.bind(User::getMobile, User::setMobile);
         password.setLabel("Password");
         password.setWidth("min-content");
         password.setRequiredIndicatorVisible(true);
@@ -197,14 +185,12 @@ public class RegisterView extends Composite<VerticalLayout> {
 			notification.setPosition(Position.BOTTOM_CENTER);
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 		} else {
-			//sendData(binder.getBean());
 			RestClient client = new RestClient();
 			ResponseData resp = client.requestHttp("POST", "http://localhost:8080/public/users/user", binder.getBean(), User.class);
 			int responseCode = 0;
 			try {
 				responseCode = resp.getConnection().getResponseCode();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
             if (responseCode == 201) {
@@ -229,95 +215,6 @@ public class RegisterView extends Composite<VerticalLayout> {
     
 	private boolean isPasswordMatched(String password1, String password2) {
 		return password1.equals(password2);
-	}
-	
-	private void sendData(User user) {
-		String endpointUrl = "http://localhost:8080/public/api/users/user";
-		ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = null;
-		try {
-			jsonBody = objectMapper.writeValueAsString(user);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		try {
-			URL url = new URL(endpointUrl);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-            try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = jsonBody.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-            
-            JsonNode node = null;
-            try {
-            	try(InputStream inputStream = connection.getInputStream()){
-            		try(BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))){
-            			StringBuilder responseStringBuilder = new StringBuilder();
-                        String line;
-                        while ((line = br.readLine()) != null) {
-                            responseStringBuilder.append(line);
-                        }
-                        // Print the server response body
-                        System.out.println("Response Body: " + responseStringBuilder.toString());
-                        node = objectMapper.readTree(responseStringBuilder.toString());
-            		}
-            	}
-				
-			} catch (IOException e) {
-				try (InputStream errorStream = connection.getErrorStream()) {
-			        if (errorStream != null) {
-			            try (BufferedReader br = new BufferedReader(new InputStreamReader(errorStream))) {
-			                StringBuilder responseStringBuilder = new StringBuilder();
-			                String line;
-			                while ((line = br.readLine()) != null) {
-			                    responseStringBuilder.append(line);
-			                }
-
-			                // Print the server response body
-			                System.out.println("Error Response Body: " + responseStringBuilder.toString());
-
-			                // Convert the error response JSON to a JsonNode
-			                node = objectMapper.readTree(responseStringBuilder.toString());
-
-			                // Handle the error response as needed
-			                //Notification.show("Error Response: " + node);
-			            }
-			        } else {
-			            // No error stream available, handle accordingly
-			            //Notification.show("No error stream available");
-			        	System.out.println("ERROR NO STREAM AVAILABLE");
-			        }
-			    }
-			}
-            
-            
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode == 201) {
-            	Notification notification = Notification.show("Registration successfully");
-            	notification.setDuration(5000);
-    			notification.setPosition(Position.BOTTOM_CENTER);
-    			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-    			getUI().get().navigate("/login");
-    			
-            } else {
-            	String errMessage = node.get("message").textValue();
-            	if (errMessage.contains("Duplicate entry")) {
-            		errMessage = "Email already exist. Try with another email address";
-				}
-            	Notification notification = Notification.show(errMessage);
-            	notification.setDuration(5000);
-    			notification.setPosition(Position.BOTTOM_CENTER);
-    			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-		} catch (Exception e) {
-            e.printStackTrace();
-            //Notification.show("An error occurred: " + e.getMessage());
-        }
-
 	}
     
 }
