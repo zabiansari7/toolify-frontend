@@ -31,7 +31,7 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
     
     public HelloToolifyView() {
     	RestClient client = new RestClient();
-    	ResponseData resp = client.requestHttp("GET", "http://localhost:8080/private/admin/products/all", null, null);
+    	ResponseData resp = client.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
     	JsonNode products = resp.getNode();
     	
     	getContent().setWidth("100%");
@@ -53,7 +53,6 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
         getContent().setFlexGrow(1.0, layoutColumn2);
         layoutColumn2.setWidth("100%");
         layoutColumn2.getStyle().set("flex-grow", "1");
-        //getContent().add(layoutRow);
         layoutRow.add(registerButton);
         layoutRow.add(loginButton);
         layoutRow.setJustifyContentMode(JustifyContentMode.END);

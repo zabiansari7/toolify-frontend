@@ -22,6 +22,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 
 import com.vaadin.flow.router.BeforeEvent;
@@ -37,7 +38,6 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Overflow;
 
 import de.srh.toolify.frontend.client.RestClient;
-import de.srh.toolify.frontend.data.Product;
 import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.views.MainLayout;
 import jakarta.annotation.security.PermitAll;
@@ -58,7 +58,7 @@ public class ProductDescriptionView extends Composite<VerticalLayout> implements
     Image image = new Image();
     Paragraph description = new Paragraph();
     HorizontalLayout layoutRow3 = new HorizontalLayout();
-    NumberField quantity = new NumberField();
+    IntegerField quantity = new IntegerField();
     Button addToCartButton = new Button();
     Grid<Pair<String, String>> stripedGrid = new Grid<>();
     Long producId;
@@ -92,6 +92,9 @@ public class ProductDescriptionView extends Composite<VerticalLayout> implements
         layoutRow3.addClassName(Gap.MEDIUM);
         layoutRow3.setWidth("100%");
         layoutRow3.setHeight("min-content");
+        quantity.setStepButtonsVisible(true);
+        quantity.setValue(1);
+        quantity.setMin(1);
         quantity.setLabel("Quantity");
         quantity.setWidth("min-content");
         addToCartButton.setText("Add To Cart");
@@ -128,8 +131,8 @@ public class ProductDescriptionView extends Composite<VerticalLayout> implements
 	
 	private void updateUI(Long productId) {
 		RestClient client = new RestClient();
-		ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/admin/products/product/" + productId,	null, null);
-		System.out.println(data.getNode());
+		ResponseData data = client.requestHttp("GET", "http://localhost:8080/public/products/product/" + productId,	null, null);
+
 		JsonNode productNode = data.getNode();
 		String imageUrl = productNode.get("image").textValue();
 		image.setSrc(imageUrl);
@@ -137,6 +140,10 @@ public class ProductDescriptionView extends Composite<VerticalLayout> implements
 		price.setText("€ " + productNode.get("price").toString());
 		description.setText(productNode.get("description").textValue());
 		
+		client = new RestClient();
+		data = client.requestHttp("GET", "http://localhost:8080/public/products/product/"+ productId +"/quantity", null, null);
+		String maxQuantityNode = data.getNode().get("message").textValue();
+		quantity.setMax(Integer.valueOf(maxQuantityNode));
 		List<Pair<String, String>> keyValuePairs = convertPProductToList(productNode);
 		stripedGrid.setItems(keyValuePairs);
 		stripedGrid.addColumn(Pair::getKey).setHeader("Property");
