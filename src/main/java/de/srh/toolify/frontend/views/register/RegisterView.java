@@ -144,7 +144,7 @@ public class RegisterView extends Composite<VerticalLayout> {
 	
 	private boolean isValidPassword(String value) {
 	    // Password must have at least 8 characters, one capital letter, one special character, and one digit
-	    String passwordRegex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+	    String passwordRegex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$";
 	    return value.matches(passwordRegex);
 	}
 
