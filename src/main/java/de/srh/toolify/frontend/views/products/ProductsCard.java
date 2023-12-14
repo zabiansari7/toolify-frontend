@@ -2,11 +2,14 @@ package de.srh.toolify.frontend.views.products;
 
 import java.math.BigDecimal;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
 import com.vaadin.flow.theme.lumo.LumoUtility.Background;
 import com.vaadin.flow.theme.lumo.LumoUtility.BorderRadius;
@@ -24,7 +27,7 @@ public class ProductsCard extends ListItem{
 	
 	private static final long serialVersionUID = 1L;
 
-	public ProductsCard(String title, String url, BigDecimal price, String description) {
+	public ProductsCard(Long productId, String title, String url, BigDecimal price, String description) {
         addClassNames(Background.CONTRAST_5, Display.FLEX, FlexDirection.COLUMN, AlignItems.START, Padding.MEDIUM,
                 BorderRadius.LARGE);
 
@@ -36,14 +39,24 @@ public class ProductsCard extends ListItem{
 
         Image image = new Image();
         image.setWidth("100%");
+        image.addClassName("clickable-button");
+        image.getElement().setProperty("productId", productId);
         image.setSrc(url);
         image.setAlt(title);
+        image.addClickListener(e -> UI.getCurrent().navigate(ProductDescriptionView.class, productId));
 
         div.add(image);
 
         Span header = new Span();
         header.addClassNames(FontSize.XLARGE, FontWeight.SEMIBOLD);
         header.setText(title);
+        
+        Button headerButton = new Button(title);
+        headerButton.getElement().setProperty("productId", productId);
+        headerButton.addClassNames(FontSize.XLARGE, FontWeight.SEMIBOLD);
+        headerButton.addClassName("clickable-button");
+        headerButton.setWidth("100%");
+        headerButton.addClickListener(e -> UI.getCurrent().navigate(ProductDescriptionView.class, productId));
 
         Span subtitle = new Span();
         subtitle.addClassNames(FontSize.SMALL, TextColor.SECONDARY);
@@ -55,9 +68,12 @@ public class ProductsCard extends ListItem{
 
         Span badge = new Span();
         badge.getElement().setAttribute("theme", "badge");
-        badge.setText("Add to Cart");
-        
-        add(div, header, subtitle, productDescription, badge);
+        badge.getElement().setProperty("productId", productId);
+        badge.addClassName("clickable-button");
+        badge.setText("Add to Cart"); 
+        badge.addClickListener(c -> Notification.show(productId.toString()));
+        badge.addClickListener(e -> e.getButton());
+        add(div, headerButton, subtitle, productDescription, badge);
 
     }
 

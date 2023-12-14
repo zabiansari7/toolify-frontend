@@ -5,7 +5,6 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -24,7 +23,6 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
 
 	private static final long serialVersionUID = 1L;
 	HorizontalLayout layoutRow = new HorizontalLayout();
-    Span badge = new Span();
     Button registerButton = new Button();
     Button loginButton = new Button();
     VerticalLayout layoutColumn2 = new VerticalLayout();
@@ -33,7 +31,7 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
     
     public HelloToolifyView() {
     	RestClient client = new RestClient();
-    	ResponseData resp = client.requestHttpToJsonNode("GET", "http://localhost:8080/private/admin/products/all", null, null);
+    	ResponseData resp = client.requestHttp("GET", "http://localhost:8080/private/admin/products/all", null, null);
     	JsonNode products = resp.getNode();
     	
     	getContent().setWidth("100%");
@@ -43,9 +41,6 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.setHeight("min-content");
-        badge.setText("Badge");
-        badge.getStyle().set("flex-grow", "1");
-        badge.getElement().getThemeList().add("badge");
         registerButton.setText("Register");
         registerButton.setWidth("min-content");
         registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -58,8 +53,7 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
         getContent().setFlexGrow(1.0, layoutColumn2);
         layoutColumn2.setWidth("100%");
         layoutColumn2.getStyle().set("flex-grow", "1");
-        getContent().add(layoutRow);
-        //layoutRow.add(badge);
+        //getContent().add(layoutRow);
         layoutRow.add(registerButton);
         layoutRow.add(loginButton);
         layoutRow.setJustifyContentMode(JustifyContentMode.END);

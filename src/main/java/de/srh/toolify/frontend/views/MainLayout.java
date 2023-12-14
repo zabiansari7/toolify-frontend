@@ -9,14 +9,21 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.Nav;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.html.UnorderedList;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
+import com.vaadin.flow.theme.lumo.LumoUtility.Background;
+import com.vaadin.flow.theme.lumo.LumoUtility.BorderRadius;
 import com.vaadin.flow.theme.lumo.LumoUtility.BoxSizing;
 import com.vaadin.flow.theme.lumo.LumoUtility.Display;
 import com.vaadin.flow.theme.lumo.LumoUtility.FlexDirection;
@@ -24,6 +31,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.FontSize;
 import com.vaadin.flow.theme.lumo.LumoUtility.FontWeight;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Height;
+import com.vaadin.flow.theme.lumo.LumoUtility.JustifyContent;
 import com.vaadin.flow.theme.lumo.LumoUtility.ListStyleType;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Overflow;
@@ -32,9 +40,13 @@ import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 import com.vaadin.flow.theme.lumo.LumoUtility.Whitespace;
 import com.vaadin.flow.theme.lumo.LumoUtility.Width;
 import de.srh.toolify.frontend.views.helloworld.HelloToolifyView;
+import de.srh.toolify.frontend.views.home.HomeView;
 import de.srh.toolify.frontend.views.login.LoginView;
 import de.srh.toolify.frontend.views.orders.UserOrderView;
+import de.srh.toolify.frontend.views.products.ProductDescriptionView;
 import de.srh.toolify.frontend.views.register.RegisterView;
+
+import java.io.InputStream;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
@@ -44,6 +56,11 @@ import org.vaadin.lineawesome.LineAwesomeIcon;
 public class MainLayout extends AppLayout {
 
     private static final long serialVersionUID = 5616033976064402712L;
+    
+    HorizontalLayout layoutRow = new HorizontalLayout();
+    Button registerButton = new Button();
+    Button loginButton = new Button();
+    VerticalLayout layoutColumn2 = new VerticalLayout();
 
 	/**
      * A simple navigation item component, based on ListItem element.
@@ -74,7 +91,7 @@ public class MainLayout extends AppLayout {
 
         public Class<?> getView() {
             return view;
-        }
+}
 
     }
 
@@ -91,11 +108,50 @@ public class MainLayout extends AppLayout {
 
         Div layout = new Div();
         layout.addClassNames(Display.FLEX, AlignItems.CENTER, Padding.Horizontal.LARGE);
+        
+        
+        Div div = new Div();
+        div.addClassNames(Background.CONTRAST, Display.FLEX, AlignItems.CENTER, JustifyContent.CENTER,
+                Margin.Bottom.MEDIUM, Overflow.HIDDEN, BorderRadius.MEDIUM);
+        div.setHeight("100%");
+        //div.setWidth("100%");
+
+        Image image = new Image();
+        image.setWidth("100%");
+        image.addClassName("clickable-button");
+        StreamResource resource = new StreamResource("toolify_logo.jpeg", this::getImageStream);
+        image.setSrc(resource);
+        image.setAlt("logo");
+        image.addClickListener(e -> UI.getCurrent().navigate(HelloToolifyView.class));
+        div.addClassName(Margin.MEDIUM);
+        div.add(image);
 
         H1 appName = new H1("Toolify Shop");
         appName.addClassNames(Margin.Vertical.MEDIUM, Margin.End.AUTO, FontSize.LARGE);
-        appName.addClickListener(click -> UI.getCurrent().navigate("/home"));
-        layout.add(appName);
+        appName.addClickListener(click -> {
+        	UI.getCurrent().navigate(HelloToolifyView.class);
+        	System.out.println(UI.getCurrent().getElement().getChildCount());
+        });
+        
+        layoutRow.setWidthFull();
+        layoutRow.addClassName(Gap.MEDIUM);
+        layoutRow.setWidth("100%");
+        layoutRow.setHeight("min-content");
+        registerButton.setText("Register");
+        registerButton.setWidth("min-content");
+        registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        registerButton.addClickListener(click -> UI.getCurrent().navigate("/register"));
+        loginButton.setText("Log In");
+        loginButton.setWidth("min-content");
+        loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        loginButton.addClickListener(click -> UI.getCurrent().navigate("/login"));
+        
+        layoutRow.add(registerButton);
+        layoutRow.add(loginButton);
+        layoutRow.setJustifyContentMode(JustifyContentMode.END);
+        
+        
+        layout.add(div, layoutRow);
 
         Nav nav = new Nav();
         nav.addClassNames(Display.FLEX, Overflow.AUTO, Padding.Horizontal.MEDIUM, Padding.Vertical.XSMALL);
@@ -110,8 +166,8 @@ public class MainLayout extends AppLayout {
 
         }
 
-       // header.add(layout, nav); //Hide Default Menu Items
-       header.add(layout);
+        //header.add(layout, nav); //Hide Default Menu Items
+        header.add(layout);
         return header;
     }
 
@@ -119,7 +175,7 @@ public class MainLayout extends AppLayout {
         return new MenuItemInfo[]{ //
                 new MenuItemInfo("Hello World", LineAwesomeIcon.GLOBE_SOLID.create(), HelloToolifyView.class), //
 
-                new MenuItemInfo("About", LineAwesomeIcon.FILE.create(), UserOrderView.class), //
+               //new MenuItemInfo("About", LineAwesomeIcon.FILE.create(), ProductDescriptionView.class), //
 
                 new MenuItemInfo("Register", LineAwesomeIcon.USER.create(), RegisterView.class), //
 
@@ -128,33 +184,9 @@ public class MainLayout extends AppLayout {
         };
     }
     
-    private HorizontalLayout getButtonsLayout() {
-    	HorizontalLayout layoutRow = new HorizontalLayout();
-        Span badge = new Span();
-        Button register = new Button();
-        Button login = new Button();
-        VerticalLayout layoutColumn2 = new VerticalLayout();
-        //getContent().setWidth("100%");
-        //getContent().getStyle().set("flex-grow", "1");
-        layoutRow.setWidthFull();
-        //getContent().setFlexGrow(1.0, layoutRow);
-        layoutRow.addClassName(Gap.MEDIUM);
-        layoutRow.setWidth("100%");
-        layoutRow.setHeight("min-content");
-        badge.setText("Badge");
-        badge.getStyle().set("flex-grow", "1");
-        badge.getElement().getThemeList().add("badge");
-        register.setText("Register");
-        register.setWidth("min-content");
-        register.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        login.setText("Log In");
-        login.setWidth("min-content");
-        login.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        layoutColumn2.setWidthFull();
-        //getContent().setFlexGrow(1.0, layoutColumn2);
-        layoutColumn2.setWidth("100%");
-        layoutColumn2.getStyle().set("flex-grow", "1");
-        return layoutRow;
-	}
+    private InputStream getImageStream() {
+        // Load the image from the classpath
+        return getClass().getClassLoader().getResourceAsStream("images/toolify_logo.jpeg");
+    }
 
 }

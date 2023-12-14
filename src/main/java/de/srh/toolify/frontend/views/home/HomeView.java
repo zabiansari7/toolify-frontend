@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,9 +18,10 @@ import de.srh.toolify.frontend.views.MainLayout;
 @Uses(Icon.class)
 public class HomeView extends Composite<VerticalLayout> {
 
-    public HomeView() {
+    private static final long serialVersionUID = 1L;
+
+	public HomeView() {
         HorizontalLayout layoutRow = new HorizontalLayout();
-        Span badge = new Span();
         Button buttonPrimary = new Button();
         Button buttonPrimary2 = new Button();
         VerticalLayout layoutColumn2 = new VerticalLayout();
@@ -32,9 +32,6 @@ public class HomeView extends Composite<VerticalLayout> {
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.setHeight("min-content");
-        badge.setText("Badge");
-        badge.getStyle().set("flex-grow", "1");
-        badge.getElement().getThemeList().add("badge");
         buttonPrimary.setText("Register");
         buttonPrimary.setWidth("min-content");
         buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -46,9 +43,9 @@ public class HomeView extends Composite<VerticalLayout> {
         layoutColumn2.setWidth("100%");
         layoutColumn2.getStyle().set("flex-grow", "1");
         getContent().add(layoutRow);
-        layoutRow.add(badge);
         layoutRow.add(buttonPrimary);
         layoutRow.add(buttonPrimary2);
         getContent().add(layoutColumn2);
     }
+
 }
