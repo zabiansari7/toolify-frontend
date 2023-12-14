@@ -19,7 +19,7 @@ import de.srh.toolify.frontend.views.MainLayout;
 import de.srh.toolify.frontend.views.products.ProductsView;
 
 @PageTitle("Home | Toolify")
-@Route(value = "home", layout = MainLayout.class)
+@Route(value = "home0", layout = MainLayout.class)
 public class ToolifyHomeView extends Composite<VerticalLayout> {
 
 	private static final long serialVersionUID = 1L;
