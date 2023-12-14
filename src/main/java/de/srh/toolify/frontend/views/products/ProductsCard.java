@@ -62,8 +62,7 @@ public class ProductsCard extends ListItem{
         subtitle.addClassNames(FontSize.SMALL, TextColor.SECONDARY);
         subtitle.setText("€ " + price);
 
-        Paragraph productDescription = new Paragraph(
-                description);
+        Paragraph productDescription = new Paragraph(description);
         productDescription.addClassName(Margin.Vertical.MEDIUM);
 
         Span badge = new Span();
