@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 
 import de.srh.toolify.frontend.client.RestClient;
@@ -19,6 +20,7 @@ import de.srh.toolify.frontend.views.products.ProductsView;
 
 @PageTitle("Home | Toolify")
 @Route(value = "home", layout = MainLayout.class)
+@RouteAlias(value = "", layout = MainLayout.class)
 public class HelloToolifyView extends Composite<VerticalLayout> {
 
 	private static final long serialVersionUID = 1L;

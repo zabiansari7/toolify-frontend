@@ -80,7 +80,7 @@ public class ProductsView extends Main implements HasComponents, HasStyle{
         	String encodedParam = null;
         	ResponseData resp;
         	if (sortBy.getValue().equals("All")) {
-        		resp = restClient.requestHttp("GET", "http://localhost:8080/private/admin/products/all", null, null);
+        		resp = restClient.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
         		populateProducts(resp, imageContainer);
 			} else {
 				try {

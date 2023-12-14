@@ -111,8 +111,7 @@ public class LoginView extends Composite<VerticalLayout> {
 				
 			    // Authentication successful, store the token in the Vaadin session
 			    String token = resp.getConnection().getHeaderField(HttpHeaders.AUTHORIZATION).substring(7);
-			    VaadinSession.getCurrent().setAttribute("token", token);
-			    System.out.println(resp.getNode());
+			    VaadinSession.getCurrent().setAttribute("token", token);			 
 			    System.out.println("MY TOKEN ::::: " + VaadinSession.getCurrent().getAttribute("token"));
 			    
 			    

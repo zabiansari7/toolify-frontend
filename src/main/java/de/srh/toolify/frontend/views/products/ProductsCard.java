@@ -23,6 +23,8 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Overflow;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 
+import de.srh.toolify.frontend.views.cart.CartView;
+
 public class ProductsCard extends ListItem{
 	
 	private static final long serialVersionUID = 1L;
@@ -70,8 +72,8 @@ public class ProductsCard extends ListItem{
         badge.getElement().setProperty("productId", productId);
         badge.addClassName("clickable-button");
         badge.setText("Add to Cart"); 
-        badge.addClickListener(c -> Notification.show(productId.toString()));
-        badge.addClickListener(e -> e.getButton());
+        badge.addClickListener(c -> UI.getCurrent().navigate(CartView.class, productId));
+        
         add(div, headerButton, subtitle, productDescription, badge);
 
     }

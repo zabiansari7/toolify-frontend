@@ -162,7 +162,7 @@ public class ProductDescriptionView extends Composite<VerticalLayout> implements
         addKeyValuePairIfNotEmpty(keyValuePairs, "Item Model Number", product.get("itemModelNumber").textValue());
         addKeyValuePairIfNotEmpty(keyValuePairs, "Design", product.get("design").textValue());
         addKeyValuePairIfNotEmpty(keyValuePairs, "Colour", product.get("colour").textValue());
-        addKeyValuePairIfNotEmpty(keyValuePairs, "Batteries Required", product.get("batteriesRequired").textValue());
+        addKeyValuePairIfNotEmpty(keyValuePairs, "Batteries Required ?", product.get("batteriesRequired").textValue());
         return keyValuePairs;
     }
 	
