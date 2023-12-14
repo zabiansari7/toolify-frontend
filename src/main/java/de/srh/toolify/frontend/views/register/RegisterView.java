@@ -82,17 +82,19 @@ public class RegisterView extends Composite<VerticalLayout> {
         firstname.setRequiredIndicatorVisible(true);
         firstname.setClearButtonVisible(true);
         lastname.setLabel("Last Name");
-        lastname.setRequired(true);
         lastname.setRequiredIndicatorVisible(true);
         email.setLabel("Email");
         email.setRequiredIndicatorVisible(true);
         mobile.setLabel("Mobile");
-        mobile.setMaxLength(10); // Set the maximum length to 10 digits
-        mobile.setRequired(true);
         mobile.setRequiredIndicatorVisible(true);
+        mobile.setMaxLength(11);
         password.setLabel("Password");
         password.setWidth("min-content");
         password.setRequiredIndicatorVisible(true);
+        binder.forField(password)
+        .withValidator(this::isValidPassword, "Password must have at least 8 characters, one capital letter, one special character, and one digit.")
+        .bind(User::getPassword, User::setPassword);
+        
         repeatPassword.setLabel("Repeat Password");
         repeatPassword.setWidth("min-content");
         repeatPassword.setRequiredIndicatorVisible(true);
@@ -140,6 +142,12 @@ public class RegisterView extends Composite<VerticalLayout> {
        
     }
 	
+	private boolean isValidPassword(String value) {
+	    // Password must have at least 8 characters, one capital letter, one special character, and one digit
+	    String passwordRegex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+	    return value.matches(passwordRegex);
+	}
+
 	private void onRegister(
 			Binder<User> binder) {
 		if (binder.getFields().anyMatch(a -> a.isEmpty())) {
@@ -150,6 +158,15 @@ public class RegisterView extends Composite<VerticalLayout> {
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			return;
 		}
+		
+		if (!isValidPassword(binder.getBean().getPassword())) {
+	        Notification notification = Notification
+	                .show("Invalid password format. Please follow the password requirements.");
+	        notification.setDuration(5000);
+	        notification.setPosition(Position.BOTTOM_CENTER);
+	        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+	        return;
+	    }
 		if (!this.isPasswordMatched(binder.getBean().getPassword(), binder.getBean().getRepeatPassword())) {
 			Notification notification = Notification
 			        .show("Password Mismatched !!!");

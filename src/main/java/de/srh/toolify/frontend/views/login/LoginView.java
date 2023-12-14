@@ -70,8 +70,10 @@ public class LoginView extends Composite<VerticalLayout> {
         layoutColumn3.getStyle().set("flex-grow", "1");
         email.setLabel("Email");
         email.setWidth("359px");
+        email.setRequiredIndicatorVisible(true);
         password.setLabel("Password");
         password.setWidth("359px");
+        password.setRequiredIndicatorVisible(true);
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("min-content");
         layoutRow.getStyle().set("flex-grow", "1");
