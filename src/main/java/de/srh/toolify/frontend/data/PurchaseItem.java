@@ -8,12 +8,14 @@ public class PurchaseItem {
 	private int quantity;
 	private BigDecimal purchasePrice;
 	private String productName;
-	
-	public PurchaseItem(Long productId, int quantity, BigDecimal purchasePrice, String productName) {
+	private int requestedQuantity;
+
+	public PurchaseItem(Long productId, int quantity, BigDecimal purchasePrice, String productName, int requestedQuantity) {
 		this.productId = productId;
 		this.quantity = quantity;
 		this.purchasePrice = purchasePrice;
 		this.productName = productName;
+		this.requestedQuantity = requestedQuantity;
 	}
 
 	public Long getProductId() {
@@ -46,6 +48,14 @@ public class PurchaseItem {
 
 	public void setProductName(String productName) {
 		this.productName = productName;
+	}
+	
+	public int getRequestedQuantity() {
+		return requestedQuantity;
+	}
+
+	public void setRequestedQuantity(int requestedQuantity) {
+		this.requestedQuantity = requestedQuantity;
 	}
 	
 }

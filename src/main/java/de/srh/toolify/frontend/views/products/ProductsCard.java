@@ -11,6 +11,9 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
 import com.vaadin.flow.theme.lumo.LumoUtility.Background;
 import com.vaadin.flow.theme.lumo.LumoUtility.BorderRadius;
@@ -80,7 +83,10 @@ public class ProductsCard extends ListItem{
         badge.setText("Add to Cart"); 
         badge.addClickListener(c -> {
         	CartService.getInstance().addToCart(prepareCartItem(productId));
-        	UI.getCurrent().navigate(CartView.class);
+        	Notification notification = Notification.show(String.format("Product '%s' added to cart", title));
+        	notification.setDuration(5000);
+			notification.setPosition(Position.TOP_CENTER);
+			notification.addThemeVariants(NotificationVariant.LUMO_CONTRAST);
         });
         
         add(div, headerButton, subtitle, productDescription, badge);
@@ -88,13 +94,12 @@ public class ProductsCard extends ListItem{
     }
 	
 	private PurchaseItem prepareCartItem(Long productId) {
-		System.out.println("HERRERREERRERERERERER");
 		RestClient client = new RestClient();
 		ResponseData data = client.requestHttp("GET", "http://localhost:8080/public/products/product/" + productId, null, null);		
 		JsonNode productNode = data.getNode();
 		ObjectMapper mapper = new ObjectMapper();
 		Product product = mapper.convertValue(productNode, Product.class);
-		return new PurchaseItem(product.getProductId(), product.getQuantity(), product.getPrice(), product.getName());
+		return new PurchaseItem(product.getProductId(), product.getQuantity(), product.getPrice(), product.getName(), 1);
 	}
 
 }
