@@ -1,9 +1,8 @@
 package de.srh.toolify.frontend.views.cart;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
@@ -18,8 +17,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
@@ -46,6 +43,8 @@ public class CartView extends Composite<VerticalLayout> {
 	Integer requestedQuantity;
 
 	HorizontalLayout headerLayout = new HorizontalLayout();
+	
+	BigDecimal totalPrice = BigDecimal.ZERO;
 
 	public CartView() {
 		getContent().setWidth("100%");
@@ -61,7 +60,6 @@ public class CartView extends Composite<VerticalLayout> {
 		layoutRow4.getStyle().set("flex-grow", "1");
 		layoutRow4.setAlignItems(Alignment.CENTER);
 		layoutRow4.setJustifyContentMode(JustifyContentMode.END);
-		totalPriceLabel.setText("Total Price:  € 758");
 		layoutRow4.setAlignSelf(FlexComponent.Alignment.CENTER, totalPriceLabel);
 		totalPriceLabel.setWidth("300px");
 		totalPriceLabel.setHeight("28px");
@@ -91,11 +89,13 @@ public class CartView extends Composite<VerticalLayout> {
 		getContent().add(headerLayout);
 		
 		List<PurchaseItem> carts = CartService.getInstance().getCartItems();
+		
 		int count = 1;
 		for (PurchaseItem purchaseItem : carts) {
 			HorizontalLayout itemLayout = new HorizontalLayout();
 			itemLayout.setWidthFull();
 			BigDecimal purchasePrice = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(purchaseItem.getRequestedQuantity()));
+			totalPrice = this.getTotalPrice().add(purchasePrice);
 			itemLayout.add(createLabel(String.valueOf(count), "sr" + count),
 					createLabel(purchaseItem.getProductName(), "product" + count), createIntegerField(0,
 							purchaseItem.getQuantity(), purchaseItem.getRequestedQuantity(), purchaseItem),
@@ -104,6 +104,11 @@ public class CartView extends Composite<VerticalLayout> {
 			getContent().add(itemLayout);
 		}
 		getContent().add(layoutColumn3);
+		if (this.getTotalPrice() != null) {
+			totalPriceLabel.setText("€" + this.getTotalPrice().toString());
+		}
+		
+		
 	}
 
 	private H3 createHeader(String text) {
@@ -127,16 +132,44 @@ public class CartView extends Composite<VerticalLayout> {
 		integerField.setMax(max);
 		integerField.setValue(value);
 		integerField.addValueChangeListener(e -> {
+			
+			BigDecimal purchasePrice = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(e.getValue()));
+			integerField.getElement().getParent().getChild(3).setText(String.valueOf("€" + purchasePrice));
+			BigDecimal newTotalPrice = BigDecimal.ZERO;
+			
 			if (e.getValue().equals(0)) {
 				integerField.getParent().ifPresent(parent -> parent.getElement().removeFromParent());
 				CartService.getInstance().removeFromCart(purchaseItem);
-			} else {
-				BigDecimal purchasePrice = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(e.getValue()));
-				System.out.println(purchasePrice);
-				integerField.getElement().getParent().getChild(3).setText(String.valueOf("€" + purchasePrice));
+				BigDecimal priceToSubtract = purchaseItem.getPurchasePrice();
+				newTotalPrice = this.getTotalPrice().subtract(priceToSubtract);
+				this.setTotalPrice(newTotalPrice);
+				totalPriceLabel.setText("€" + this.getTotalPrice().toString());
+			} else if (e.getOldValue() < e.getValue()) {
+				int diff = e.getValue() - e.getOldValue();
+				BigDecimal priceToAdd = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(diff));
+				newTotalPrice = this.getTotalPrice().add(priceToAdd);
+				this.setTotalPrice(newTotalPrice);
+			}			
+			else {
+				int diff = e.getOldValue() - e.getValue();	
+				BigDecimal priceToSubtract = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(diff));
+				newTotalPrice = this.getTotalPrice().subtract(priceToSubtract);
+				this.setTotalPrice(newTotalPrice);
 			}
+			totalPriceLabel.setText("€" + newTotalPrice.toString());
+			
 		});
+		
 		return integerField;
+	}
+	
+	
+	public BigDecimal getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(BigDecimal totalPrice) {
+		this.totalPrice = totalPrice;
 	}
 
 }
