@@ -1,5 +1,7 @@
 package de.srh.toolify.frontend.views.checkout;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -16,12 +18,21 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 
+import de.srh.toolify.frontend.client.RestClient;
+import de.srh.toolify.frontend.data.ResponseData;
+import de.srh.toolify.frontend.data.User;
 import de.srh.toolify.frontend.views.MainLayout;
 import jakarta.annotation.security.PermitAll;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,40 +41,40 @@ import java.util.List;
 @PermitAll
 @Uses(Icon.class)
 public class CheckoutView extends Composite<VerticalLayout> {
+	
+	HorizontalLayout layoutRow = new HorizontalLayout();
+
+    HorizontalLayout layoutRow2 = new HorizontalLayout();
+    VerticalLayout layoutColumn2 = new VerticalLayout();
+    H2 h2 = new H2();
+    H4 h4 = new H4();
+    HorizontalLayout layoutRow3 = new HorizontalLayout();
+    TextField firstname = new TextField();
+    TextField lastname = new TextField();
+    H4 h42 = new H4();
+    HorizontalLayout layoutRow4 = new HorizontalLayout();
+    TextField defaultStreetName = new TextField();
+    TextField defaultStreetNumber = new TextField();
+    HorizontalLayout layoutRow5 = new HorizontalLayout();
+    TextField defaultPincode = new TextField();
+    TextField defaultCity = new TextField();
+    ComboBox selectAddress = new ComboBox();
+    VerticalLayout layoutColumn3 = new VerticalLayout();
+    H2 h22 = new H2();
+    HorizontalLayout layoutRow6 = new HorizontalLayout();
+    H4 h43 = new H4();
+    H4 h44 = new H4();
+    H4 h45 = new H4();
+    HorizontalLayout layoutRow7 = new HorizontalLayout();
+    H5 h5 = new H5();
+    H5 h52 = new H5();
+    H5 h53 = new H5();
+    HorizontalLayout layoutRow8 = new HorizontalLayout();
+    H3 h3 = new H3();
+    Button payButton = new Button();
 
     public CheckoutView() {
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        Button buttonPrimary = new Button();
-        Button buttonPrimary2 = new Button();
-        Button buttonPrimary3 = new Button();
-        HorizontalLayout layoutRow2 = new HorizontalLayout();
-        VerticalLayout layoutColumn2 = new VerticalLayout();
-        H2 h2 = new H2();
-        H4 h4 = new H4();
-        HorizontalLayout layoutRow3 = new HorizontalLayout();
-        TextField textField = new TextField();
-        TextField textField2 = new TextField();
-        H4 h42 = new H4();
-        HorizontalLayout layoutRow4 = new HorizontalLayout();
-        TextField textField3 = new TextField();
-        TextField textField4 = new TextField();
-        HorizontalLayout layoutRow5 = new HorizontalLayout();
-        TextField textField5 = new TextField();
-        TextField textField6 = new TextField();
-        ComboBox comboBox = new ComboBox();
-        VerticalLayout layoutColumn3 = new VerticalLayout();
-        H2 h22 = new H2();
-        HorizontalLayout layoutRow6 = new HorizontalLayout();
-        H4 h43 = new H4();
-        H4 h44 = new H4();
-        H4 h45 = new H4();
-        HorizontalLayout layoutRow7 = new HorizontalLayout();
-        H5 h5 = new H5();
-        H5 h52 = new H5();
-        H5 h53 = new H5();
-        HorizontalLayout layoutRow8 = new HorizontalLayout();
-        H3 h3 = new H3();
-        Button buttonSecondary = new Button();
+        
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
         layoutRow.addClassName(Gap.MEDIUM);
@@ -71,15 +82,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
         layoutRow.setHeight("min-content");
         layoutRow.setAlignItems(Alignment.START);
         layoutRow.setJustifyContentMode(JustifyContentMode.END);
-        buttonPrimary.setText("Cart");
-        buttonPrimary.setWidth("min-content");
-        buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonPrimary2.setText("Profile");
-        buttonPrimary2.setWidth("min-content");
-        buttonPrimary2.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonPrimary3.setText("Logout");
-        buttonPrimary3.setWidth("min-content");
-        buttonPrimary3.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         layoutRow2.setWidthFull();
         getContent().setFlexGrow(1.0, layoutRow2);
         layoutRow2.addClassName(Gap.MEDIUM);
@@ -98,12 +101,12 @@ public class CheckoutView extends Composite<VerticalLayout> {
         layoutRow3.addClassName(Gap.MEDIUM);
         layoutRow3.setWidth("100%");
         layoutRow3.setHeight("min-content");
-        textField.setLabel("First Name");
-        textField.getStyle().set("flex-grow", "1");
-        textField.setHeight("75px");
-        textField2.setLabel("Last Name");
-        textField2.getStyle().set("flex-grow", "1");
-        textField2.setHeight("75px");
+        firstname.setLabel("First Name");
+        firstname.getStyle().set("flex-grow", "1");
+        firstname.setHeight("75px");
+        lastname.setLabel("Last Name");
+        lastname.getStyle().set("flex-grow", "1");
+        lastname.setHeight("75px");
         h42.setText("Shipping Address");
         h42.setWidth("max-content");
         layoutRow4.setWidthFull();
@@ -111,26 +114,26 @@ public class CheckoutView extends Composite<VerticalLayout> {
         layoutRow4.addClassName(Gap.MEDIUM);
         layoutRow4.setWidth("100%");
         layoutRow4.setHeight("min-content");
-        textField3.setLabel("Street Name");
-        textField3.setWidth("400px");
-        textField3.setHeight("50px");
-        textField4.setLabel("Street Number");
-        textField4.setWidth("400px");
-        textField4.setHeight("50px");
+        defaultStreetName.setLabel("Street Name");
+        defaultStreetName.setWidth("400px");
+        defaultStreetName.setHeight("50px");
+        defaultStreetNumber.setLabel("Street Number");
+        defaultStreetNumber.setWidth("400px");
+        defaultStreetNumber.setHeight("50px");
         layoutRow5.setWidthFull();
         layoutColumn2.setFlexGrow(1.0, layoutRow5);
         layoutRow5.addClassName(Gap.MEDIUM);
         layoutRow5.setWidth("100%");
         layoutRow5.setHeight("min-content");
-        textField5.setLabel("Postcode");
-        textField5.setWidth("400px");
-        textField5.setHeight("50px");
-        textField6.setLabel("City");
-        textField6.setWidth("400px");
-        textField6.setHeight("50px");
-        comboBox.setLabel("Select Address");
-        comboBox.setWidth("100%");
-        setComboBoxSampleData(comboBox);
+        defaultPincode.setLabel("Postcode");
+        defaultPincode.setWidth("400px");
+        defaultPincode.setHeight("50px");
+        defaultCity.setLabel("City");
+        defaultCity.setWidth("400px");
+        defaultCity.setHeight("50px");
+        selectAddress.setLabel("Select Address");
+        selectAddress.setWidth("100%");
+        setComboBoxSampleData(selectAddress);
         layoutColumn3.setHeightFull();
         layoutRow2.setFlexGrow(1.0, layoutColumn3);
         layoutColumn3.setWidth("634px");
@@ -170,28 +173,28 @@ public class CheckoutView extends Composite<VerticalLayout> {
         layoutRow8.setJustifyContentMode(JustifyContentMode.END);
         h3.setText("Total Price €259.99");
         h3.setWidth("max-content");
-        buttonSecondary.setText("Pay");
-        layoutColumn3.setAlignSelf(FlexComponent.Alignment.END, buttonSecondary);
-        buttonSecondary.setWidth("200px");
+        payButton.setText("Pay");
+        payButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        payButton.addClassName("payButton");
+        layoutColumn3.setAlignSelf(FlexComponent.Alignment.END, payButton);
+        payButton.setWidth("200px");
         getContent().add(layoutRow);
-        layoutRow.add(buttonPrimary);
-        layoutRow.add(buttonPrimary2);
-        layoutRow.add(buttonPrimary3);
+
         getContent().add(layoutRow2);
         layoutRow2.add(layoutColumn2);
         layoutColumn2.add(h2);
         layoutColumn2.add(h4);
         layoutColumn2.add(layoutRow3);
-        layoutRow3.add(textField);
-        layoutRow3.add(textField2);
+        layoutRow3.add(firstname);
+        layoutRow3.add(lastname);
         layoutColumn2.add(h42);
         layoutColumn2.add(layoutRow4);
-        layoutRow4.add(textField3);
-        layoutRow4.add(textField4);
+        layoutRow4.add(defaultStreetName);
+        layoutRow4.add(defaultStreetNumber);
         layoutColumn2.add(layoutRow5);
-        layoutRow5.add(textField5);
-        layoutRow5.add(textField6);
-        layoutColumn2.add(comboBox);
+        layoutRow5.add(defaultPincode);
+        layoutRow5.add(defaultCity);
+        layoutColumn2.add(selectAddress);
         layoutRow2.add(layoutColumn3);
         layoutColumn3.add(h22);
         layoutColumn3.add(layoutRow6);
@@ -204,7 +207,35 @@ public class CheckoutView extends Composite<VerticalLayout> {
         layoutRow7.add(h53);
         layoutColumn3.add(layoutRow8);
         layoutRow8.add(h3);
-        layoutColumn3.add(buttonSecondary);
+        layoutColumn3.add(payButton);
+        
+        
+        firstname.setEnabled(false);
+        lastname.setEnabled(false);
+        defaultStreetName.setEnabled(false);
+        defaultStreetNumber.setEnabled(false);
+        defaultPincode.setEnabled(false);
+        defaultCity.setEnabled(false);
+        
+        RestClient client = new RestClient();
+        String email = getEmailFromSession();
+        String encodedParam = null;
+        try {
+			encodedParam = URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedParam, null, null);
+        ObjectMapper mapper = new ObjectMapper();
+        User user = mapper.convertValue(data.getNode(), User.class);
+        
+        firstname.setValue(user.getFirstname());
+        lastname.setValue(user.getLastname());
+        defaultStreetName.setValue(user.getDefaultStreetName());
+        defaultStreetNumber.setValue(String.valueOf(user.getDefaultStreetNumber()));
+        defaultPincode.setValue(String.valueOf(user.getDefaultPincode()));
+        defaultCity.setValue(user.getDefaultCity());
     }
 
     record SampleItem(String value, String label, Boolean disabled) {
@@ -219,4 +250,9 @@ public class CheckoutView extends Composite<VerticalLayout> {
         comboBox.setItems(sampleItems);
         comboBox.setItemLabelGenerator(item -> ((SampleItem) item).label());
     }
+    
+    private String getEmailFromSession() {
+    	JsonNode userNode = (JsonNode) VaadinSession.getCurrent().getAttribute("user");
+    	return userNode.get("email").toString();
+	}
 }

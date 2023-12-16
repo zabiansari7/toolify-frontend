@@ -90,6 +90,8 @@ public class CartView extends Composite<VerticalLayout> {
 		
 		List<PurchaseItem> carts = CartService.getInstance().getCartItems();
 		
+
+		
 		int count = 1;
 		for (PurchaseItem purchaseItem : carts) {
 			HorizontalLayout itemLayout = new HorizontalLayout();
