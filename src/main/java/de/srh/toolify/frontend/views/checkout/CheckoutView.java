@@ -1,5 +1,6 @@
 package de.srh.toolify.frontend.views.checkout;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -77,6 +78,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
     Long addressId;
     BigDecimal totalPrice = BigDecimal.ZERO;
     
+    @SuppressWarnings("unchecked")
     public CheckoutView() {
         
         getContent().setWidth("100%");
@@ -261,8 +263,8 @@ public class CheckoutView extends Composite<VerticalLayout> {
         	String e = getEmailFromSession();
             purchaseRequest.setEmail(e);
             purchaseRequest.setAddressId(this.getAddressId());
-            List<CheckoutPurchaseItem> checkoutPurchaseItems = new ArrayList<>();
-            List<PurchaseItem> purchaseItems =  (List<PurchaseItem>) VaadinSession.getCurrent().getAttribute("cartItems");
+            List<CheckoutPurchaseItem> checkoutPurchaseItems = new ArrayList<>();            
+			List<PurchaseItem> purchaseItems =  (List<PurchaseItem>) VaadinSession.getCurrent().getAttribute("cartItems");
             for (PurchaseItem purchaseItem : purchaseItems) {
 				CheckoutPurchaseItem checkoutPurchaseItem = new CheckoutPurchaseItem();
 				checkoutPurchaseItem.setProductId(purchaseItem.getProductId());
@@ -273,7 +275,16 @@ public class CheckoutView extends Composite<VerticalLayout> {
             purchaseRequest.setPurchaseItems(checkoutPurchaseItems);
         	ResponseData responseData = client.requestHttp("POST", "http://localhost:8080/private/purchase/product", purchaseRequest, CheckoutRequest.class);
         	JsonNode responseNode = responseData.getNode();
-        	System.out.println(responseNode);
+        	int code = 0;
+        	try {
+				code = responseData.getConnection().getResponseCode();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+        	
+        	if (code == 201) {
+				UI.getCurrent().navigate("orderplaced");
+			}
         });
     }
     
@@ -313,6 +324,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
 		return h;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private List<HorizontalLayout> listPurchaseItems() {
 		List<PurchaseItem> purchases = (List<PurchaseItem>) VaadinSession.getCurrent().getAttribute("cartItems");
 		List<HorizontalLayout> horizontalLayouts = new ArrayList<>();
