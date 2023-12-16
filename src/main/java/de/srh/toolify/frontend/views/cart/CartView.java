@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
@@ -73,6 +74,7 @@ public class CartView extends Composite<VerticalLayout> {
 		checkoutButton.setText("Proceed to Checkout Page");
 		checkoutButton.setWidth("300px");
 		checkoutButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		checkoutButton.addClickListener(event -> UI.getCurrent().navigate("checkout"));
 
 		headerLayout.add(createHeader("SrNo."), createHeader("Product"), createHeader("Quantity"),
 				createHeader("Price"));
@@ -98,10 +100,10 @@ public class CartView extends Composite<VerticalLayout> {
 			itemLayout.setWidthFull();
 			BigDecimal purchasePrice = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(purchaseItem.getRequestedQuantity()));
 			totalPrice = this.getTotalPrice().add(purchasePrice);
-			itemLayout.add(createLabel(String.valueOf(count), "sr" + count),
-					createLabel(purchaseItem.getProductName(), "product" + count), createIntegerField(0,
+			itemLayout.add(createLabel(String.valueOf(count)),
+					createLabel(purchaseItem.getProductName()), createIntegerField(0,
 							purchaseItem.getQuantity(), purchaseItem.getRequestedQuantity(), purchaseItem),
-					createLabel(String.valueOf("€" + purchasePrice), "price" + count));
+					createLabel(String.valueOf("€" + purchasePrice)));
 			count++;
 			getContent().add(itemLayout);
 		}
@@ -119,10 +121,9 @@ public class CartView extends Composite<VerticalLayout> {
 		return header;
 	}
 
-	private H4 createLabel(String text, String id) {
+	private H4 createLabel(String text) {
 		H4 label = new H4(text);
 		label.setWidthFull();
-		label.setId(id);
 		return label;
 	}
 
@@ -148,12 +149,14 @@ public class CartView extends Composite<VerticalLayout> {
 				totalPriceLabel.setText("€" + this.getTotalPrice().toString());
 			} else if (e.getOldValue() < e.getValue()) {
 				int diff = e.getValue() - e.getOldValue();
+				purchaseItem.setRequestedQuantity(e.getValue());
 				BigDecimal priceToAdd = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(diff));
 				newTotalPrice = this.getTotalPrice().add(priceToAdd);
 				this.setTotalPrice(newTotalPrice);
 			}			
 			else {
 				int diff = e.getOldValue() - e.getValue();	
+				purchaseItem.setRequestedQuantity(e.getValue());
 				BigDecimal priceToSubtract = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(diff));
 				newTotalPrice = this.getTotalPrice().subtract(priceToSubtract);
 				this.setTotalPrice(newTotalPrice);
