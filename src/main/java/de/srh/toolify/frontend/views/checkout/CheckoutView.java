@@ -33,7 +33,9 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 
 import de.srh.toolify.frontend.client.RestClient;
 import de.srh.toolify.frontend.data.Address;
+import de.srh.toolify.frontend.data.CheckoutPurchaseItem;
 import de.srh.toolify.frontend.data.PurchaseItem;
+import de.srh.toolify.frontend.data.CheckoutRequest;
 import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.data.User;
 import de.srh.toolify.frontend.views.MainLayout;
@@ -72,7 +74,9 @@ public class CheckoutView extends Composite<VerticalLayout> {
     HorizontalLayout editAndPayHorizontalLayout = new HorizontalLayout();
     Button editCartButton = new Button();
     Button payButton = new Button();
-
+    Long addressId;
+    BigDecimal totalPrice = BigDecimal.ZERO;
+    
     public CheckoutView() {
         
         getContent().setWidth("100%");
@@ -196,11 +200,13 @@ public class CheckoutView extends Composite<VerticalLayout> {
         	addresses.add(address);
 		}
         
+        this.setAddressId(null);
         
         selectAddress.setItems(addresses);
         selectAddress.setPlaceholder("Select your shipping address");
         selectAddress.setItemLabelGenerator(item -> String.format("%s - %d, %d - %s", item.getStreetName(), item.getStreetNumber(), item.getPostCode(), item.getCityName()));
         selectAddress.addValueChangeListener(event -> {
+        	this.setAddressId(event.getValue().getAddressID());
             defaultStreetName.setValue(event.getValue().getStreetName());
             defaultStreetNumber.setValue(String.valueOf(event.getValue().getStreetNumber()));
             defaultPincode.setValue(String.valueOf(event.getValue().getPostCode()));
@@ -212,7 +218,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
         listPurchaseItems();
         
         
-        h3.setText("Total Price €259.99");
+        h3.setText("Total Price €" + this.getTotalPrice());
         h3.setWidth("max-content");       
         editCartButton.setText("Edit Cart");
         layoutColumn3.setAlignSelf(FlexComponent.Alignment.END, editCartButton);
@@ -249,6 +255,26 @@ public class CheckoutView extends Composite<VerticalLayout> {
         
         editAndPayHorizontalLayout.add(editCartButton, payButton);
         layoutColumn3.add(editAndPayHorizontalLayout);
+        
+        payButton.addClickListener(event -> {
+        	CheckoutRequest purchaseRequest = new CheckoutRequest();
+        	String e = getEmailFromSession();
+            purchaseRequest.setEmail(e);
+            purchaseRequest.setAddressId(this.getAddressId());
+            List<CheckoutPurchaseItem> checkoutPurchaseItems = new ArrayList<>();
+            List<PurchaseItem> purchaseItems =  (List<PurchaseItem>) VaadinSession.getCurrent().getAttribute("cartItems");
+            for (PurchaseItem purchaseItem : purchaseItems) {
+				CheckoutPurchaseItem checkoutPurchaseItem = new CheckoutPurchaseItem();
+				checkoutPurchaseItem.setProductId(purchaseItem.getProductId());
+				checkoutPurchaseItem.setQuantity(purchaseItem.getRequestedQuantity());
+				checkoutPurchaseItems.add(checkoutPurchaseItem);
+			}
+            
+            purchaseRequest.setPurchaseItems(checkoutPurchaseItems);
+        	ResponseData responseData = client.requestHttp("POST", "http://localhost:8080/private/purchase/product", purchaseRequest, CheckoutRequest.class);
+        	JsonNode responseNode = responseData.getNode();
+        	System.out.println(responseNode);
+        });
     }
     
     private JsonNode getAddresses(RestClient client, String email) {
@@ -294,9 +320,27 @@ public class CheckoutView extends Composite<VerticalLayout> {
 		for (PurchaseItem purchaseItem : purchases) {
 			HorizontalLayout h = createHorizontalLayout();
 			BigDecimal purchasePrice = purchaseItem.getPurchasePrice().multiply(BigDecimal.valueOf(purchaseItem.getRequestedQuantity()));
+			this.setTotalPrice(this.getTotalPrice().add(purchasePrice));
 			h.add(createLabel(purchaseItem.getProductName()), createLabel(String.valueOf(purchaseItem.getRequestedQuantity())), createLabel(String.valueOf(purchasePrice)));
 			layoutColumn3.add(h);
 		}
 		return horizontalLayouts;
 	}
+
+	public Long getAddressId() {
+		return addressId;
+	}
+
+	public void setAddressId(Long addressId) {
+		this.addressId = addressId;
+	}
+
+	public BigDecimal getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(BigDecimal totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+	
 }
