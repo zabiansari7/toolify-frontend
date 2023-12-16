@@ -114,9 +114,7 @@ public class LoginView extends Composite<VerticalLayout> {
 			    String token = resp.getConnection().getHeaderField(HttpHeaders.AUTHORIZATION).substring(7);
 			    VaadinSession.getCurrent().setAttribute("token", token);
 			    VaadinSession.getCurrent().setAttribute("user", resp.getNode());
-			    
-			    System.out.println("MY TOKEN ::::: " + VaadinSession.getCurrent().getAttribute("token"));
-			    System.out.println("USER DETAILS :::: " + resp.getNode());
+			    VaadinSession.getCurrent().setAttribute("cartItems", null);
 			    
 			    Notification notification = Notification.show("Login successful");
 				notification.setDuration(5000);
