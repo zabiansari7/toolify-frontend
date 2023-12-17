@@ -284,6 +284,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
 			}
         	
         	if (code == 201) {
+        		UI.getCurrent().navigate("orderplaced");
 			}
         });
     }

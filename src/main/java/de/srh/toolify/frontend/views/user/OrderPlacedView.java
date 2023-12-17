@@ -55,7 +55,7 @@ public class OrderPlacedView extends Composite<VerticalLayout> implements Before
         h2.setText("Thank You! Your order has been placed successfully.");
         layoutRow.setAlignSelf(FlexComponent.Alignment.CENTER, h2);
         h2.setWidth("max-content");
-        h5.setText("You can view your order in the Profile > Order History.");
+        h5.setText("You can view your order invoice in the Profile > Order History");
         h5.setWidth("max-content");
         buttonPrimary.setText("Back to Home");
         buttonPrimary.setWidth("min-content");
