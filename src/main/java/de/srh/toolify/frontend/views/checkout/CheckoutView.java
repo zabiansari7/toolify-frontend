@@ -39,6 +39,7 @@ import de.srh.toolify.frontend.data.PurchaseItem;
 import de.srh.toolify.frontend.data.CheckoutRequest;
 import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.data.User;
+import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
 import jakarta.annotation.security.PermitAll;
 
@@ -167,7 +168,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
         defaultCity.setReadOnly(true);
         
         RestClient client = new RestClient();
-        String email = getEmailFromSession();
+        String email = HelperUtil.getEmailFromSession();
         String encodedEmail = null;
         try {
 			encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
@@ -260,7 +261,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
         
         payButton.addClickListener(event -> {
         	CheckoutRequest purchaseRequest = new CheckoutRequest();
-        	String e = getEmailFromSession();
+        	String e = HelperUtil.getEmailFromSession();
             purchaseRequest.setEmail(e);
             purchaseRequest.setAddressId(this.getAddressId());
             List<CheckoutPurchaseItem> checkoutPurchaseItems = new ArrayList<>();            
@@ -283,7 +284,6 @@ public class CheckoutView extends Composite<VerticalLayout> {
 			}
         	
         	if (code == 201) {
-				UI.getCurrent().navigate("orderplaced");
 			}
         });
     }
@@ -292,11 +292,6 @@ public class CheckoutView extends Composite<VerticalLayout> {
 		ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + email, null, null);
 		return data.getNode();
     }
-
-    private String getEmailFromSession() {
-    	JsonNode userNode = (JsonNode) VaadinSession.getCurrent().getAttribute("user");
-    	return userNode.get("email").textValue();
-	}
     
     private H3 createHeader(String text) {
     	H3 header = new H3(text);

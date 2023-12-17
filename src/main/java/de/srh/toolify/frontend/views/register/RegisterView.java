@@ -144,7 +144,6 @@ public class RegisterView extends Composite<VerticalLayout> {
         
         User user = new User();
         binder.setBean(user);
-       
     }
 	
 	private boolean isValidPassword(String value) {
