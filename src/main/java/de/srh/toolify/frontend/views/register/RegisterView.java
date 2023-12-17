@@ -151,12 +151,6 @@ public class RegisterView extends Composite<VerticalLayout> {
 	    String passwordRegex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$";
 	    return value.matches(passwordRegex);
 	}
-	
-	private boolean isValidMobileNumber(String value) {
-	    String mobileNumberRegex = "^\\\\+\\\\d{0,15}$";
-	    return value.matches(mobileNumberRegex);
-	}
-
 
 	private void onRegister(
 			Binder<User> binder) {
