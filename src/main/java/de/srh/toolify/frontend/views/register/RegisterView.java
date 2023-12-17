@@ -72,10 +72,21 @@ public class RegisterView extends Composite<VerticalLayout> {
         firstname.setRequired(true);
         firstname.setRequiredIndicatorVisible(true);
         firstname.setClearButtonVisible(true);
+        
         lastname.setLabel("Last Name");
         lastname.setRequiredIndicatorVisible(true);
+        
         email.setLabel("Email");
         email.setRequiredIndicatorVisible(true);
+        email.setRequired(true);
+        email.setPattern("^[A-Za-z0-9._%+-]+@[A-Za-z0-9]+\\.[A-Za-z]{2,}$");
+        email.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9]+\\.[A-Za-z]{2,}$");
+        	 email.setInvalid(!isValid);
+        });
+        
+        
         mobile.setLabel("Mobile");
         mobile.setRequiredIndicatorVisible(true);
         mobile.setMaxLength(15);
@@ -103,18 +114,42 @@ public class RegisterView extends Composite<VerticalLayout> {
         repeatPassword.setLabel("Repeat Password");
         repeatPassword.setWidth("min-content");
         repeatPassword.setRequiredIndicatorVisible(true);
+        repeatPassword.setRequired(true);
+        
         defaultStreetName.setLabel("Street");
         defaultStreetName.setRequiredIndicatorVisible(true);
+        defaultStreetName.setRequired(true);
+        defaultStreetName.setMaxLength(30);
+        
         defaultStreetNumber.setLabel("Number");
+        defaultStreetNumber.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultStreetNumber.addValueChangeListener(event -> {
+            String newValue = event.getValue().replaceAll(",", "");
+            defaultStreetNumber.setValue(newValue);
+        defaultStreetNumber.setRequired(true);
+        defaultStreetNumber.setPattern("\\d{0,3}");
+        defaultStreetNumber.setMaxLength(3);
         defaultStreetNumber.setWidth("min-content");
-        defaultStreetNumber.setRequiredIndicatorVisible(true);
+        });
+        
+       
         defaultPincode.setLabel("Pincode");
+        defaultPincode.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultPincode.addValueChangeListener(event -> {
+            String newValue = event.getValue().replaceAll(",", "");
+            defaultPincode.setValue(newValue);
+        });
+        defaultPincode.setPattern("\\d{0,5}");
         defaultPincode.setWidth("min-content");
+        defaultPincode.setMaxLength(5);
         defaultPincode.setRequired(true);
         defaultPincode.setRequiredIndicatorVisible(true);
+        
+        
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
         defaultCity.setRequiredIndicatorVisible(true);
+        
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.getStyle().set("flex-grow", "1");
