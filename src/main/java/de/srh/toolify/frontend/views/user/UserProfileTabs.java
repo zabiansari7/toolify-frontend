@@ -3,11 +3,10 @@ package de.srh.toolify.frontend.views.user;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
+import java.text.DecimalFormat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
@@ -25,6 +24,7 @@ import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.converter.StringToLongConverter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
@@ -43,7 +43,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
 
     private static final long serialVersionUID = 1L;
 
-    Binder<EditUser> binder = new Binder<>(EditUser.class);
+    Binder<User> binder = new Binder<>(User.class);
 	VerticalLayout userDetailsMain = new VerticalLayout();
     FormLayout userDetailsFormLayout = new FormLayout();
     TextField firstname = new TextField();
@@ -129,11 +129,11 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         userDetailsHorizontalLayout.add(userDetailsEditButton);
         //userDetailsHorizontalLayout.add(userDetailsCancelButton);  
         
-        EditUser user = getUserByEmail();
+        User user = getUserByEmail();
         
         binder.setBean(user);
         binder.setReadOnly(true);
-        
+
         userDetailsEditButton.addClickListener(e -> {
         	binder.setReadOnly(false);
         	email.setReadOnly(true);
@@ -148,9 +148,23 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         });
         
         userDetailsSaveButton.addClickListener(e -> {
-        	EditUser editedUser = binder.getBean();
+        	String email = HelperUtil.getEmailFromSession();
+        	String encodedEmail = null;
+            try {
+    			encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
+    		} catch (UnsupportedEncodingException ex) {
+    			ex.printStackTrace();
+    		}
+            
+        	EditUser editUser = prepareEditUser();
         	RestClient client = new RestClient();
-        	client.requestHttp("PUT", "http://localhost:8080/private/user?email=", editedUser, EditUser.class);
+        	client.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
+        	System.out.println("CHECK :: " + binder.getBean().getEmail());
+        	userDetailsHorizontalLayout.removeAll();
+        	userDetailsHorizontalLayout.add(userDetailsEditButton);
+        	binder.setReadOnly(true);
+        	
+        	
         });
         
         return userDetailsMain;
@@ -325,7 +339,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         return main;
 	}
     
-    private EditUser getUserByEmail() {
+    private User getUserByEmail() {
     	String email = HelperUtil.getEmailFromSession();
     	RestClient client = new RestClient();
     	String encodedEmail = null;
@@ -336,6 +350,19 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
 		}
         ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(data.getNode(), EditUser.class);		
+        return mapper.convertValue(data.getNode(), User.class);		
+	}
+    
+    private EditUser prepareEditUser() {
+    	EditUser editUser = new EditUser();
+    	editUser.setFirstname(firstname.getValue());
+    	editUser.setLastname(lastname.getValue());
+    	editUser.setMobile(mobile.getValue());
+    	editUser.setDefaultStreetName(defaultStreetName.getValue());
+    	editUser.setDefaultStreetNumber(Long.valueOf(defaultStreetNumber.getValue()));
+    	String pincode = defaultPincode.getValue().toString();
+    	editUser.setDefaultPincode(Long.valueOf(pincode));
+    	editUser.setDefaultCity(defaultCity.getValue());	
+    	return editUser;
 	}
 }

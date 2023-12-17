@@ -1,10 +1,6 @@
 package de.srh.toolify.frontend.data;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class EditUser {
-	@JsonIgnore
-	private Long userId;
 	private String firstname;
     private String lastname;
     private String mobile;
@@ -13,12 +9,7 @@ public class EditUser {
     private Long defaultPincode;
     private String defaultCity;
     
-	public Long getUserId() {
-		return userId;
-	}
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
+
 	public String getFirstname() {
 		return firstname;
 	}
@@ -60,8 +51,6 @@ public class EditUser {
 	}
 	public void setDefaultCity(String defaultCity) {
 		this.defaultCity = defaultCity;
-	}
-
-    
+	}    
 	
 }
