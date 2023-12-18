@@ -58,6 +58,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
     private static final long serialVersionUID = 1L;
 
     Binder<User> binder = new Binder<>(User.class);
+    Binder<AddAddress> addressBinder = new Binder<>(AddAddress.class);
 	VerticalLayout userDetailsMain = new VerticalLayout();
     FormLayout userDetailsFormLayout = new FormLayout();
     TextField firstname = new TextField();
@@ -72,8 +73,9 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
     Button userDetailsEditButton = new Button();
     Button userDetailsSaveButton = new Button();
     Button userDetailsCancelButton = new Button();
-    
     String emailFromSession = HelperUtil.getEmailFromSession();
+    
+    private boolean valuesMatches;
     
 	public UserProfileTabs() {
 		binder.bindInstanceFields(this);
@@ -193,12 +195,12 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
         defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultCity.setPattern("^[a-zA-Z]*$");
+        defaultCity.setPattern("^[a-zA-Z]*$");;
         defaultCity.setMaxLength(30);
         defaultCity.setRequiredIndicatorVisible(true);
         defaultCity.addValueChangeListener(event -> {
         	String value = event.getValue();
-        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	boolean isValid = value.matches(("^[a-zA-Z]*$"));
         	defaultCity.setInvalid(!isValid);
         });
         
@@ -249,6 +251,11 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         });
         
         userDetailsSaveButton.addClickListener(e -> {
+        	if (binder.validate().isOk() == false) {
+        		showNotification("Please correct your input", NotificationVariant.LUMO_ERROR);
+    			return;
+			}
+        	
         	if (binder.getFields().anyMatch(a -> a.isEmpty())) {
     			showNotification("Empty fields detected !", NotificationVariant.LUMO_ERROR);
     			return;
@@ -485,11 +492,15 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         TextField streetNumber = new TextField();
         HorizontalLayout layoutRow2 = new HorizontalLayout();
         HorizontalLayout layoutRow3 = new HorizontalLayout();
-        TextField pincode = new TextField();
-        TextField city = new TextField();
+        TextField postcode = new TextField();
+        TextField cityName = new TextField();
         HorizontalLayout layoutRow4 = new HorizontalLayout();
         Button saveButton = new Button();
         Button cancelButton = new Button();
+        addressBinder.forField(streetName).bind(AddAddress::getStreetName, AddAddress::setStreetName);
+        addressBinder.forField(streetNumber).bind(AddAddress::getStreetNumber, AddAddress::setStreetNumber);
+        addressBinder.forField(postcode).bind(AddAddress::getPostCode, AddAddress::setPostCode);
+        addressBinder.forField(cityName).bind(AddAddress::getCityName, AddAddress::setCityName);
         dialogVerticalLayout.setWidth("100%");
         dialogVerticalLayout.getStyle().set("flex-grow", "1");
         layoutRow.setWidthFull();
@@ -500,18 +511,25 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         layoutRow.setAlignItems(Alignment.CENTER);
         layoutRow.setJustifyContentMode(JustifyContentMode.CENTER);
         streetName.setLabel("Street");
+        streetName.setValueChangeMode(ValueChangeMode.EAGER);
         streetName.setRequiredIndicatorVisible(true);
+        streetName.setPattern("^[a-zA-Z]*$");
         streetName.setRequired(true);
         streetName.setMaxLength(30);
+        streetName.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	streetName.setInvalid(!isValid);
+        });
         streetNumber.setLabel("Number");
         streetNumber.setRequiredIndicatorVisible(true);
         streetNumber.setValueChangeMode(ValueChangeMode.EAGER);
         streetNumber.addValueChangeListener(event -> {
             String newValue = event.getValue().replaceAll(",", "");
             streetNumber.setValue(newValue);
-            streetNumber.setRequired(true);
-            streetNumber.setPattern("\\d{0,3}");
-            streetNumber.setMaxLength(3);
+        streetNumber.setRequired(true);
+        streetNumber.setPattern("\\d{0,3}");
+        streetNumber.setMaxLength(3);
         //defaultStreetNumber.setWidth("min-content");
         });
         //layoutRow2.setWidthFull();
@@ -526,21 +544,28 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         layoutRow3.setHeight("75px");
         layoutRow3.setAlignItems(Alignment.CENTER);
         layoutRow3.setJustifyContentMode(JustifyContentMode.CENTER);
-        pincode.setLabel("Pincode");
-        pincode.setValueChangeMode(ValueChangeMode.EAGER);
-        pincode.addValueChangeListener(event -> {
+        postcode.setLabel("Pincode");
+        postcode.setRequired(true);
+        postcode.setRequiredIndicatorVisible(true);
+        postcode.setValueChangeMode(ValueChangeMode.EAGER);
+        postcode.addValueChangeListener(event -> {
             String newValue = event.getValue().replaceAll(",", "");
-            pincode.setValue(newValue);
+            postcode.setValue(newValue);
         });
-        pincode.setPattern("\\d{0,5}");
-        pincode.setWidth("min-content");
-        pincode.setMaxLength(5);
-        pincode.setRequired(true);
-        pincode.setRequiredIndicatorVisible(true);
-        city.setLabel("City");
-        city.setWidth("min-content");
-        city.setMaxLength(30);
-        city.setRequiredIndicatorVisible(true);
+        postcode.setPattern("\\d{0,5}");
+        postcode.setWidth("min-content");
+        postcode.setMaxLength(5);
+        cityName.setLabel("City");
+        cityName.setWidth("min-content");
+        cityName.setValueChangeMode(ValueChangeMode.EAGER);
+        cityName.setPattern("^[a-zA-Z]*$");;
+        cityName.setMaxLength(30);
+        cityName.setRequiredIndicatorVisible(true);
+        cityName.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("^[a-zA-Z]*$"));
+        	cityName.setInvalid(!isValid);
+        });
         layoutRow4.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow4);
         layoutRow4.addClassName(Gap.MEDIUM);
@@ -561,8 +586,8 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
        // getContent().add(layoutRow2);
         //layoutRow2.add(layoutRow3);
         dialogVerticalLayout.add(layoutRow3);
-        layoutRow3.add(pincode);
-        layoutRow3.add(city);
+        layoutRow3.add(postcode);
+        layoutRow3.add(cityName);
         dialogVerticalLayout.add(layoutRow4);
         layoutRow4.add(saveButton);
         layoutRow4.add(cancelButton);
@@ -572,7 +597,16 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         });
  
         saveButton.addClickListener(e -> {
-        	addAddress(streetName.getValue(), Integer.valueOf(streetNumber.getValue()), Integer.valueOf(pincode.getValue()), city.getValue());
+        	if (addressBinder.validate().isOk() == false) {
+        		showNotification("Please correct your input", NotificationVariant.LUMO_ERROR);
+    			return;
+			}
+        	
+        	if (addressBinder.getFields().anyMatch(a -> a.isEmpty())) {
+    			showNotification("Empty fields detected !", NotificationVariant.LUMO_ERROR);
+    			return;
+    		}        	
+        	addAddress(streetName.getValue(), Integer.valueOf(streetNumber.getValue()), Integer.valueOf(postcode.getValue()), cityName.getValue());
         	showNotification("Address saved successfully", NotificationVariant.LUMO_SUCCESS);
         	dialog.close();
         	main.removeAll();
@@ -585,8 +619,8 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
 
     	AddAddress address = new AddAddress();
     	address.setStreetName(streetName);
-    	address.setStreetNumber(streetNumber);
-    	address.setPostCode(postcode);
+    	address.setStreetNumber(String.valueOf(streetNumber));
+    	address.setPostCode(String.valueOf(postcode));
     	address.setCityName(city);
     	
     	UserForAddress user = new UserForAddress();
