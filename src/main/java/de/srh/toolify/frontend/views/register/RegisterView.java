@@ -100,16 +100,26 @@ public class RegisterView extends Composite<VerticalLayout> {
             	mobile.setHelperText("");
 			} else {
 				mobile.setHelperText("Mobile number should start with '+' and then only 15 numbers");
-				
 			}
             
         });
+        
         password.setLabel("Password");
+        password.setValueChangeMode(ValueChangeMode.EAGER);
         password.setWidth("min-content");
         password.setRequiredIndicatorVisible(true);
-        binder.forField(password)
-        	.withValidator(this::isValidPassword, "Password must have at least 8 characters, one capital letter, one special character, and one digit.")
-        	.bind(User::getPassword, User::setPassword);
+        password.addValueChangeListener(event -> {
+        	boolean isValid = event.getValue().matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$");
+        	password.setInvalid(!isValid);
+        	if (isValid) {
+            	password.setHelperText("");
+			} else {
+				password.setHelperText("Password must have at least 8 characters, one capital letter, one special character, and one digit");
+			}
+        });
+//        binder.forField(password)
+//        	.withValidator(this::isValidPassword, "Password must have at least 8 characters, one capital letter, one special character, and one digit.")
+//        	.bind(User::getPassword, User::setPassword);
         
         repeatPassword.setLabel("Repeat Password");
         repeatPassword.setWidth("min-content");
@@ -134,6 +144,8 @@ public class RegisterView extends Composite<VerticalLayout> {
         
        
         defaultPincode.setLabel("Pincode");
+        defaultPincode.setRequired(true);
+        defaultPincode.setRequiredIndicatorVisible(true);
         defaultPincode.setValueChangeMode(ValueChangeMode.EAGER);
         defaultPincode.addValueChangeListener(event -> {
             String newValue = event.getValue().replaceAll(",", "");
@@ -142,9 +154,6 @@ public class RegisterView extends Composite<VerticalLayout> {
         defaultPincode.setPattern("\\d{0,5}");
         defaultPincode.setWidth("min-content");
         defaultPincode.setMaxLength(5);
-        defaultPincode.setRequired(true);
-        defaultPincode.setRequiredIndicatorVisible(true);
-        
         
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");

@@ -1,5 +1,6 @@
 package de.srh.toolify.frontend.views.user;
 
+import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +15,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
@@ -35,9 +37,12 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.InputStreamFactory;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
+import com.vaadin.server.BrowserWindowOpener;
 
 import de.srh.toolify.frontend.client.RestClient;
 import de.srh.toolify.frontend.data.EditUser;
@@ -428,7 +433,12 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
     	
     	JsonNode purchaseOrderNode = data.getNode();
     	return purchaseOrderNode;
-    	
-		
 	}
+	
+	private void showPdfInBrowser(byte[] pdfBytes) {
+        StreamResource resource = new StreamResource("invoice.pdf", (InputStreamFactory) () -> new ByteArrayInputStream(pdfBytes));
+        resource.setContentType("application/pdf");
+        
+        // now check link in the bookmark
+    }
 }

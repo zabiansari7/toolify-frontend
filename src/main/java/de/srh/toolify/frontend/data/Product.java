@@ -22,6 +22,8 @@ public class Product {
     private Category category;
 	private Instant createdOn;
 	private Instant updatedOn;
+	
+	public Product() {}
 
 	public Long getProductId() {
 		return productId;
