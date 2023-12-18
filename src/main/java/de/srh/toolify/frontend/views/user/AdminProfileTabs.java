@@ -12,6 +12,7 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -26,9 +27,11 @@ import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.shared.ThemeVariant;
+import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -41,7 +44,10 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 
 import de.srh.toolify.frontend.client.RestClient;
+import de.srh.toolify.frontend.data.Address;
+import de.srh.toolify.frontend.data.Category;
 import de.srh.toolify.frontend.data.EditUser;
+import de.srh.toolify.frontend.data.Product;
 import de.srh.toolify.frontend.data.PurchaseHistory;
 import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.data.User;
@@ -56,6 +62,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     private static final long serialVersionUID = 1L;
 
     Binder<User> binder = new Binder<>(User.class);
+    Binder<Product> binderProduct = new Binder<>(Product.class);
 	VerticalLayout adminDetailsMain = new VerticalLayout();
     FormLayout adminDetailsFormLayout = new FormLayout();
     TextField firstname = new TextField();
@@ -70,13 +77,38 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     Button adminDetailsEditButton = new Button();
     Button adminDetailsSaveButton = new Button();
     Button adminDetailsCancelButton = new Button();
+    HorizontalLayout layoutRow = new HorizontalLayout();
+    
+	HorizontalLayout layoutRowDialog = new HorizontalLayout();
+    TextField name = new TextField();
+    TextField description = new TextField();
+    TextField price = new TextField();
+    HorizontalLayout layoutRow2 = new HorizontalLayout();
+    TextField quantity = new TextField();
+    TextField voltage = new TextField();
+    TextField productDimensions = new TextField();
+    HorizontalLayout layoutRow3 = new HorizontalLayout();
+    TextField itemWeight = new TextField();
+    TextField bodyMaterial = new TextField();
+    TextField itemModelNumber = new TextField();
+    HorizontalLayout layoutRow4 = new HorizontalLayout();
+    TextField design = new TextField();
+    TextField colour = new TextField();
+    TextField batteriesRequired = new TextField();
+    HorizontalLayout layoutRow5 = new HorizontalLayout();
+    TextField image = new TextField();
+    Select<Category> category = new Select<>();
+    HorizontalLayout layoutRow6 = new HorizontalLayout();
+    Button saveButton = new Button();
+    Button cancelButton = new Button();
     
     String emailFromSession = HelperUtil.getEmailFromSession();
+    Category categorySelectValue;
     
 	public AdminProfileTabs() {
 		binder.bindInstanceFields(this);
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        TabSheet tabSheet = new TabSheet();     
+		binderProduct.bindInstanceFields(this);
+
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
         layoutRow.setWidthFull();
@@ -84,6 +116,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.getStyle().set("flex-grow", "1");
+        TabSheet tabSheet = new TabSheet();
         tabSheet.setWidth("100%");
         setTabSheetSampleData(tabSheet, binder);
         getContent().add(layoutRow);
@@ -94,12 +127,11 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         tabSheet.add("Admin Details", new Div(getAdminDetailsLayout(binder))).addClassName("tabStyle");
         tabSheet.add("Users Order History", new Div(getAdminOrdersLayout())).addClassName("tabStyle");
         tabSheet.add("Manage Products", new Div(getManageProductsLayout())).addClassName("tabStyle");
+        tabSheet.add("Manage Categoty", new Div(getManageProductsLayout())).addClassName("tabStyle");
     }
     
-private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {    
-    	
-        
-        getContent().setWidth("100%"); 
+private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {   
+	    getContent().setWidth("100%"); 
         getContent().getStyle().set("flex-grow", "1");
         getContent().setJustifyContentMode(JustifyContentMode.START);
         getContent().setAlignItems(Alignment.CENTER);
@@ -298,23 +330,23 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 		h.add(createHeader("SrNo."), createHeader("User Email"),createHeader("Purchase Date"), createHeader("Invoice Number"), createHeader("View Invoice"));
 		return h;
 	}
-	
-	private HorizontalLayout headerManageProductsLayout() {
+
+	private HorizontalLayout headerManageProductsLayout(VerticalLayout mainLayout) {
 		HorizontalLayout h = createHorizontalLayout();
-		h.add(createHeader("SrNo."), createHeader("Product Name"),createHeader("Quantity"), createHeader("Price"), createAddProductButton(adminDetailsMain));
+		h.add(createHeader("SrNo."), createHeader("Product Name"),createHeader("Quantity"), createHeader("Price"), createAddProductButton(mainLayout));
 		return h;
 	}
 	
 	private Button createAddProductButton(VerticalLayout mainLayout) {
 		Button button = new Button("Add Product");
-		//button.setWidth("20%");
+		button.setWidth("20%");
 		button.addClassName("clickable-button");
 		button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		button.addClickListener(event -> {
 			Dialog dialog = new Dialog();
-			dialog.getElement().setAttribute("aria-label", "Create new address");
+			dialog.getElement().setAttribute("aria-label", "Create new product");
 			mainLayout.add(dialog);
-			//dialog.add(prepareDialogComponent(dialog, mainLayout));
+			dialog.add(createAddProductDialog(dialog, mainLayout));
 			dialog.open();
 		});
 		return button;
@@ -349,17 +381,50 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 		return header;
 	}
 	
+	private HorizontalLayout createEditDeleteLayout() {
+		HorizontalLayout h = createHorizontalLayout();
+		h.add(createEditButton(), createDeleteButton());
+		return h;
+	}
+	
+	private Button createEditButton() {
+		Button button = new Button("Edit");
+		button.setWidth("50%");
+		button.addClassName("clickable-button");
+		return button;
+	}
+	
+	private Button createDeleteButton() {
+		Button button = new Button("Delete");
+		button.setWidth("50%");
+		button.addClassName("clickable-button");
+		button.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		return button;
+	}
+	
 	private VerticalLayout getManageProductsLayout() {
     	VerticalLayout main = new VerticalLayout();
     	
-    	HorizontalLayout labeHorizontalLayout = headerManageProductsLayout();
+    	HorizontalLayout labeHorizontalLayout = headerManageProductsLayout(main);
     	main.add(labeHorizontalLayout);
-    	
-    	
-       
         main.setWidth("100%");
-        main.setHeight("752px");
         
+        JsonNode productsNode = getAllProducts();
+        ObjectMapper mapper = HelperUtil.getObjectMapper();
+    	int count = 0;
+    	for (JsonNode productNode : productsNode) {
+    		count++;
+    		Product product = mapper.convertValue(productNode, Product.class);
+			
+			HorizontalLayout addressHorizontalLayout = createHorizontalLayout();
+			addressHorizontalLayout.add(
+					createLabel(String.valueOf(count)), 
+					createLabel(product.getName()), 
+					createLabel(String.valueOf(product.getQuantity())), 
+					createLabel(String.valueOf(product.getPrice())), 
+					createEditDeleteLayout());
+					main.add(addressHorizontalLayout);
+    	}
         return main;
 	}
 	
@@ -369,4 +434,162 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 		JsonNode purchaseHistoryNode = data.getNode();
 		return purchaseHistoryNode;
 	}
+	
+	private VerticalLayout createAddProductDialog(Dialog dialog, VerticalLayout main) {
+		VerticalLayout dialogVerticalLayout = new VerticalLayout();
+		
+        dialogVerticalLayout.setWidth("100%");
+        dialogVerticalLayout.getStyle().set("flex-grow", "1");
+        layoutRowDialog.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRowDialog);
+        layoutRowDialog.addClassName(Gap.MEDIUM);
+        //layoutRow.setWidth("1100px");
+        layoutRowDialog.setHeight("75px");
+        layoutRowDialog.setAlignItems(Alignment.CENTER);
+        layoutRowDialog.setJustifyContentMode(JustifyContentMode.CENTER);
+        name.setLabel("Name");
+        //name.setWidth("180px");
+        description.setLabel("Description");
+        //description.setWidth("180px");
+        price.setLabel("Price");
+        //price.setWidth("180px");
+        layoutRow2.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
+        layoutRow2.addClassName(Gap.MEDIUM);
+        layoutRow2.setWidthFull();
+        layoutRow2.setHeight("75px");
+        layoutRow2.setAlignItems(Alignment.CENTER);
+        layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
+        quantity.setLabel("Quantity");
+        //quantity.setWidth("180px");
+        voltage.setLabel("Voltage");
+        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, voltage);
+        //voltage.setWidth("180px");
+        productDimensions.setLabel("Product Dimensions");
+        //productDimensions.setWidth("180px");
+        layoutRow3.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow3);
+        layoutRow3.addClassName(Gap.MEDIUM);
+        //layoutRow3.setWidth("1100px");
+        layoutRow3.setHeight("75px");
+        layoutRow3.setAlignItems(Alignment.CENTER);
+        layoutRow3.setJustifyContentMode(JustifyContentMode.CENTER);
+        itemWeight.setLabel("Item Weight");
+        //itemWeight.setWidth("180px");
+        bodyMaterial.setLabel("Body Material");
+        //bodyMaterial.setWidth("180px");
+        itemModelNumber.setLabel("Item Model Number");
+        //itemModelNumber.setWidth("180px");
+        layoutRow4.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow4);
+        layoutRow4.addClassName(Gap.MEDIUM);
+        //layoutRow4.setWidth("1100px");
+        layoutRow4.setHeight("75px");
+        layoutRow4.setAlignItems(Alignment.CENTER);
+        layoutRow4.setJustifyContentMode(JustifyContentMode.CENTER);
+        design.setLabel("Design");
+        //design.setWidth("180px");
+        colour.setLabel("Colour");
+        //colour.setWidth("180px");
+        batteriesRequired.setLabel("Batteries Required");
+        //batteriesRequired.setWidth("180px");
+        layoutRow5.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow5);
+        layoutRow5.addClassName(Gap.MEDIUM);
+        //layoutRow5.setWidth("1100px");
+        layoutRow5.setHeight("75px");
+        layoutRow5.setAlignItems(Alignment.CENTER);
+        layoutRow5.setJustifyContentMode(JustifyContentMode.CENTER);
+        image.setLabel("Image URL");
+        //image.setWidth("180px");
+        category.setLabel("Category");
+        category.setPlaceholder("Select Category");
+        List<Category> categories = HelperUtil.getAllCategoriesAsClass();
+        category.setItems(categories);
+        category.addValueChangeListener(e -> {
+        	this.setCategorySelectValue(e.getValue());
+        });
+        
+        //category.setWidth("180px");
+        //setComboBoxSampleData(category);
+        layoutRow6.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow6);
+        layoutRow6.addClassName(Gap.MEDIUM);
+        //layoutRow6.setWidth("1100px");
+        layoutRow6.getStyle().set("flex-grow", "1");
+        layoutRow6.setAlignItems(Alignment.CENTER);
+        layoutRow6.setJustifyContentMode(JustifyContentMode.CENTER);
+        saveButton.setText("Save");
+        saveButton.setWidth("min-content");
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        cancelButton.setText("Cancel");
+        cancelButton.setWidth("min-content");
+        cancelButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        cancelButton.addClickListener(e -> {
+        	dialog.close();
+        });
+        dialogVerticalLayout.add(layoutRowDialog);
+        layoutRowDialog.add(name);
+        layoutRowDialog.add(description);
+        layoutRowDialog.add(price);
+        dialogVerticalLayout.add(layoutRow2);
+        layoutRow2.add(quantity);
+        layoutRow2.add(voltage);
+        layoutRow2.add(productDimensions);
+        dialogVerticalLayout.add(layoutRow3);
+        layoutRow3.add(itemWeight);
+        layoutRow3.add(bodyMaterial);
+        layoutRow3.add(itemModelNumber);
+        dialogVerticalLayout.add(layoutRow4);
+        layoutRow4.add(design);
+        layoutRow4.add(colour);
+        layoutRow4.add(batteriesRequired);
+        dialogVerticalLayout.add(layoutRow5);
+        layoutRow5.add(image);
+        layoutRow5.add(category);
+        dialogVerticalLayout.add(layoutRow6);
+        layoutRow6.add(saveButton);
+        layoutRow6.add(cancelButton);
+
+        Product product = new Product();
+        binderProduct.forField(category)
+        	.bind(Product::getCategory, Product::setCategory);
+        binderProduct.setBean(product);
+        
+        saveButton.addClickListener(e -> {
+        	addProduct(binderProduct);
+        	showNotification("Product saved successfully", NotificationVariant.LUMO_SUCCESS);
+        	dialog.close();
+        	main.removeAll();
+        	main.getElement().executeJs("location.reload(true)");
+        });
+                
+		return dialogVerticalLayout;
+	}
+	
+	private  JsonNode addProduct(Binder<Product> productBinder) {
+		
+		Product product = productBinder.getBean();
+		
+		RestClient client = new RestClient();
+		ResponseData data = client.requestHttp("POST","http://localhost:8080/private/admin/products/product", product, Product.class);
+		JsonNode productResponse = data.getNode();
+		return productResponse;
+	}
+	
+	private JsonNode getAllProducts() {
+		RestClient client = new RestClient();
+		ResponseData data = client.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
+		JsonNode productsNode = data.getNode();
+		return productsNode;
+	}
+
+	public Category getCategorySelectValue() {
+		return categorySelectValue;
+	}
+
+	public void setCategorySelectValue(Category categorySelectValue) {
+		this.categorySelectValue = categorySelectValue;
+	}
+	
 }

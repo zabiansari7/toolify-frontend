@@ -68,7 +68,9 @@ public class RegisterView extends Composite<VerticalLayout> {
         h3.setText("Register");
         h3.setWidth("100%");
         formLayout2Col.setWidth("100%");
+        
         firstname.setLabel("First Name");
+        firstname.setValueChangeMode(ValueChangeMode.EAGER);
         firstname.setRequired(true);
         firstname.setPattern("^[a-zA-Z]*$");
         firstname.setMaxLength(30);
@@ -81,6 +83,7 @@ public class RegisterView extends Composite<VerticalLayout> {
         });
         
         lastname.setLabel("Last Name");
+        lastname.setValueChangeMode(ValueChangeMode.EAGER);
         lastname.setMaxLength(30);
         lastname.setRequiredIndicatorVisible(true);
         lastname.setRequired(true);
@@ -92,6 +95,7 @@ public class RegisterView extends Composite<VerticalLayout> {
         });
         
         email.setLabel("Email");
+        email.setValueChangeMode(ValueChangeMode.EAGER);
         email.setRequiredIndicatorVisible(true);
         email.setRequired(true);
         email.setPattern("^[A-Za-z0-9._%+-]+@[A-Za-z0-9]+\\.[A-Za-z]{2,}$");
@@ -123,8 +127,10 @@ public class RegisterView extends Composite<VerticalLayout> {
         password.setValueChangeMode(ValueChangeMode.EAGER);
         password.setWidth("min-content");
         password.setRequiredIndicatorVisible(true);
+        password.setPattern("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$");
         password.addValueChangeListener(event -> {
-        	boolean isValid = event.getValue().matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$");
+        	String value = event.getValue();
+        	boolean isValid = value.matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$");
         	password.setInvalid(!isValid);
         	if (isValid) {
             	password.setHelperText("");
@@ -142,6 +148,7 @@ public class RegisterView extends Composite<VerticalLayout> {
         repeatPassword.setRequired(true);
         
         defaultStreetName.setLabel("Street");
+        defaultStreetName.setValueChangeMode(ValueChangeMode.EAGER);
         defaultStreetName.setRequiredIndicatorVisible(true);
         defaultStreetName.setPattern("^[a-zA-Z]*$");
         defaultStreetName.setRequired(true);
@@ -180,6 +187,7 @@ public class RegisterView extends Composite<VerticalLayout> {
         
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
+        defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
         defaultCity.setPattern("^[a-zA-Z]*$");
         defaultCity.setMaxLength(30);
         defaultCity.setRequiredIndicatorVisible(true);

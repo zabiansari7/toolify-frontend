@@ -2,10 +2,14 @@ package de.srh.toolify.frontend.data;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Category {
 
 	private String categoryName;
+	@JsonIgnore
     private Instant createdOn;
+	@JsonIgnore
 	private Instant updatedOn;
 	
 	public String getCategoryName() {

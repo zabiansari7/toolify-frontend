@@ -95,7 +95,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
     private void setTabSheetSampleData(TabSheet tabSheet, Binder<User> binder) {
         tabSheet.add("User Details", new Div(getUserDetailsLayout(binder))).addClassName("tabStyle");
         tabSheet.add("Order History", new Div(getUserOrdersLayout())).addClassName("tabStyle");
-        tabSheet.add("Manage Address", new Div(getManageAddressesLayout())).addClassName("tabStyle");
+        tabSheet.add("Manage Address", new Div(getManageAddressesLayout())).addClassName("tabStyle");;
     }
     
     private VerticalLayout getUserDetailsLayout(Binder<User> binder) {    

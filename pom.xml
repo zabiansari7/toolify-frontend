@@ -43,19 +43,7 @@
     </dependencyManagement>
 
     <dependencies>
-		<!-- https://mvnrepository.com/artifact/com.fo0.vaadin.browserwindowopener.main/BrowserWindowOpener -->
-		<dependency>
-		    <groupId>com.fo0.vaadin.browserwindowopener.main</groupId>
-		    <artifactId>BrowserWindowOpener</artifactId>
-		    <version>1.0.3</version>
-		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.itextpdf/io -->
-		<dependency>
-		    <groupId>com.itextpdf</groupId>
-		    <artifactId>io</artifactId>
-		    <version>7.0.0</version>
-		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.itextpdf/itextpdf -->
 		<dependency>
