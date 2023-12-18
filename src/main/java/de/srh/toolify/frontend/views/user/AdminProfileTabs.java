@@ -1,37 +1,27 @@
 package de.srh.toolify.frontend.views.user;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.shared.ThemeVariant;
-import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -40,25 +30,22 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
-import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-
 import de.srh.toolify.frontend.client.RestClient;
-import de.srh.toolify.frontend.data.Address;
-import de.srh.toolify.frontend.data.Category;
-import de.srh.toolify.frontend.data.EditUser;
-import de.srh.toolify.frontend.data.Product;
-import de.srh.toolify.frontend.data.PurchaseHistory;
-import de.srh.toolify.frontend.data.ResponseData;
-import de.srh.toolify.frontend.data.User;
+import de.srh.toolify.frontend.data.*;
 import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @PageTitle("AdminProfile | Toolify")
 @Route(value = "admin", layout = MainLayout.class)
 @Uses(Icon.class)
 public class AdminProfileTabs extends Composite<VerticalLayout> {
-
     private static final long serialVersionUID = 1L;
 
     Binder<User> binder = new Binder<>(User.class);
@@ -105,6 +92,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     String emailFromSession = HelperUtil.getEmailFromSession();
     Category categorySelectValue;
     
+    private boolean valuesMatches;
+    
 	public AdminProfileTabs() {
 		binder.bindInstanceFields(this);
 		binderProduct.bindInstanceFields(this);
@@ -141,15 +130,36 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         adminDetailsFormLayout.setWidth("100%");
         
         firstname.setLabel("First Name");
+        firstname.setValueChangeMode(ValueChangeMode.EAGER);
         firstname.setRequired(true);
+        firstname.setPattern("^[a-zA-Z]*$");
+        firstname.setMaxLength(30);
+        firstname.setRequiredIndicatorVisible(true);
+        firstname.setClearButtonVisible(true);
+        firstname.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	firstname.setInvalid(!isValid);	
+        });
         
         lastname.setLabel("Last Name");
+        lastname.setValueChangeMode(ValueChangeMode.EAGER);
+        lastname.setMaxLength(30);
+        lastname.setRequiredIndicatorVisible(true);
         lastname.setRequired(true);
+        lastname.setPattern("^[a-zA-Z]*$");
+        lastname.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("^[a-zA-Z]*$"));
+        	lastname.setInvalid(!isValid);
+        });
         
         email.setLabel("Email");
         
         mobile.setLabel("Mobile");
+        mobile.setPattern("^\\+\\d{0,15}$");
         mobile.setRequired(true);
+        mobile.setMaxLength(15);
         mobile.addValueChangeListener(event -> {
             String value = event.getValue();
             boolean isValid = value.matches("^\\+\\d{0,15}$");
@@ -162,8 +172,18 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 			}
             
         });
+        
         defaultStreetName.setLabel("Street");
+        defaultStreetName.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultStreetName.setRequiredIndicatorVisible(true);
+        defaultStreetName.setPattern("^[a-zA-Z]*$");
         defaultStreetName.setRequired(true);
+        defaultStreetName.setMaxLength(30);
+        defaultStreetName.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	defaultStreetName.setInvalid(!isValid);
+        });
         
         defaultStreetNumber.setLabel("Number");
         defaultStreetNumber.setRequired(true);
@@ -189,7 +209,15 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
       
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
-        defaultCity.setRequired(true);
+        defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultCity.setPattern("^[a-zA-Z ]*$");;
+        defaultCity.setMaxLength(30);
+        defaultCity.setRequiredIndicatorVisible(true);
+        defaultCity.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("^[a-zA-Z ]*$"));
+        	defaultCity.setInvalid(!isValid);
+        });
         
         adminDetailsHorizontalLayout.addClassName(Gap.MEDIUM);
         adminDetailsHorizontalLayout.setWidth("100%");
@@ -220,6 +248,7 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         User admin = getUserByEmail();
         binder.setBean(admin);
         binder.setReadOnly(true);
+        
 
         adminDetailsEditButton.addClickListener(e -> {
         	binder.setReadOnly(false);
@@ -238,6 +267,10 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         });
         
         adminDetailsSaveButton.addClickListener(e -> {
+        	if (binder.validate().isOk() == false) {
+        		showNotification("Please correct your input", NotificationVariant.LUMO_ERROR);
+    			return;
+			}
         	if (binder.getFields().anyMatch(a -> a.isEmpty())) {
     			showNotification("Empty fields detected !", NotificationVariant.LUMO_ERROR);
     			return;
@@ -421,7 +454,7 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 					createLabel(String.valueOf(count)), 
 					createLabel(product.getName()), 
 					createLabel(String.valueOf(product.getQuantity())), 
-					createLabel(String.valueOf(product.getPrice())), 
+					createLabel("€" + String.valueOf(product.getPrice())),
 					createEditDeleteLayout());
 					main.add(addressHorizontalLayout);
     	}
@@ -506,12 +539,8 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         category.setPlaceholder("Select Category");
         List<Category> categories = HelperUtil.getAllCategoriesAsClass();
         category.setItems(categories);
-        category.addValueChangeListener(e -> {
-        	this.setCategorySelectValue(e.getValue());
-        });
-        
-        //category.setWidth("180px");
-        //setComboBoxSampleData(category);
+        category.addValueChangeListener(e -> this.setCategorySelectValue(e.getValue()));
+
         layoutRow6.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow6);
         layoutRow6.addClassName(Gap.MEDIUM);
@@ -551,9 +580,10 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         layoutRow6.add(saveButton);
         layoutRow6.add(cancelButton);
 
+        category.setItemLabelGenerator(Category::getCategoryName);
+
         Product product = new Product();
-        binderProduct.forField(category)
-        	.bind(Product::getCategory, Product::setCategory);
+
         binderProduct.setBean(product);
         
         saveButton.addClickListener(e -> {
@@ -590,6 +620,14 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 
 	public void setCategorySelectValue(Category categorySelectValue) {
 		this.categorySelectValue = categorySelectValue;
+	}
+
+	public boolean isValuesMatches() {
+		return valuesMatches;
+	}
+
+	public void setValuesMatches(boolean valuesMatches) {
+		this.valuesMatches = valuesMatches;
 	}
 	
 }

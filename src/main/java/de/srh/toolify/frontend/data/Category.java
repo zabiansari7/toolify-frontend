@@ -19,7 +19,7 @@ public class Category {
 	public void setCategoryName(String categoryName) {
 		this.categoryName = categoryName;
 	}
-	
+
 	public Instant getCreatedOn() {
 		return createdOn;
 	}

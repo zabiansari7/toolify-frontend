@@ -188,12 +188,12 @@ public class RegisterView extends Composite<VerticalLayout> {
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
         defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultCity.setPattern("^[a-zA-Z]*$");
+        defaultCity.setPattern("^[a-zA-Z ]*$");;
         defaultCity.setMaxLength(30);
         defaultCity.setRequiredIndicatorVisible(true);
         defaultCity.addValueChangeListener(event -> {
         	String value = event.getValue();
-        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	boolean isValid = value.matches(("^[a-zA-Z ]*$"));
         	defaultCity.setInvalid(!isValid);
         });
         
