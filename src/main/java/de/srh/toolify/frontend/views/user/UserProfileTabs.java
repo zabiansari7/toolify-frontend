@@ -8,28 +8,25 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.shared.ThemeVariant;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -40,15 +37,16 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
-import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-import com.vaadin.server.BrowserWindowOpener;
 
 import de.srh.toolify.frontend.client.RestClient;
+import de.srh.toolify.frontend.data.AddAddress;
+import de.srh.toolify.frontend.data.Address;
 import de.srh.toolify.frontend.data.EditUser;
 import de.srh.toolify.frontend.data.PurchaseHistory;
 import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.data.User;
+import de.srh.toolify.frontend.data.UserForAddress;
 import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
 
@@ -238,7 +236,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
     private VerticalLayout getUserOrdersLayout() {    	
     	VerticalLayout main = new VerticalLayout();
     	
-    	HorizontalLayout labelHorizontalLayout = headerLayout();
+    	HorizontalLayout labelHorizontalLayout = headerOrderHistoryLayout();
     	main.add(labelHorizontalLayout);
     	
     	JsonNode orderListJsonNode = prepareOrderContent();
