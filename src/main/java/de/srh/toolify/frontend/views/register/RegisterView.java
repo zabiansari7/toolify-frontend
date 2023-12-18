@@ -133,8 +133,14 @@ public class RegisterView extends Composite<VerticalLayout> {
         
         defaultStreetName.setLabel("Street");
         defaultStreetName.setRequiredIndicatorVisible(true);
+        defaultStreetName.setPattern("^[a-zA-Z]*$");
         defaultStreetName.setRequired(true);
         defaultStreetName.setMaxLength(30);
+        defaultStreetName.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	firstname.setInvalid(!isValid);
+        });
         
         defaultStreetNumber.setLabel("Number");
         defaultStreetNumber.setRequiredIndicatorVisible(true);
@@ -165,8 +171,14 @@ public class RegisterView extends Composite<VerticalLayout> {
         
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
+        defaultCity.setPattern("^[a-zA-Z]*$");
         defaultCity.setMaxLength(30);
         defaultCity.setRequiredIndicatorVisible(true);
+        defaultCity.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	firstname.setInvalid(!isValid);
+        });
         
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");

@@ -13,6 +13,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
@@ -48,7 +49,7 @@ import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
 
 @PageTitle("AdminProfile | Toolify")
-@Route(value = "adminprofiletabs", layout = MainLayout.class)
+@Route(value = "admin", layout = MainLayout.class)
 @Uses(Icon.class)
 public class AdminProfileTabs extends Composite<VerticalLayout> {
 
@@ -270,7 +271,7 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 	private VerticalLayout getAdminOrdersLayout() {    	
 		VerticalLayout main = new VerticalLayout();
 		
-		HorizontalLayout labelHorizontalLayout = headerLayout();
+		HorizontalLayout labelHorizontalLayout = headerOrderHistoryLayout();
 		main.add(labelHorizontalLayout);
 		
 		JsonNode orderListJsonNode = getPurchaseHistoryAll();
@@ -292,10 +293,31 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 	    return main;
 	}
 	
-	private HorizontalLayout headerLayout() {
+	private HorizontalLayout headerOrderHistoryLayout() {
 		HorizontalLayout h = createHorizontalLayout();
 		h.add(createHeader("SrNo."), createHeader("User Email"),createHeader("Purchase Date"), createHeader("Invoice Number"), createHeader("View Invoice"));
 		return h;
+	}
+	
+	private HorizontalLayout headerManageProductsLayout() {
+		HorizontalLayout h = createHorizontalLayout();
+		h.add(createHeader("SrNo."), createHeader("Product Name"),createHeader("Quantity"), createHeader("Price"), createAddProductButton(adminDetailsMain));
+		return h;
+	}
+	
+	private Button createAddProductButton(VerticalLayout mainLayout) {
+		Button button = new Button("Add Product");
+		//button.setWidth("20%");
+		button.addClassName("clickable-button");
+		button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		button.addClickListener(event -> {
+			Dialog dialog = new Dialog();
+			dialog.getElement().setAttribute("aria-label", "Create new address");
+			mainLayout.add(dialog);
+			//dialog.add(prepareDialogComponent(dialog, mainLayout));
+			dialog.open();
+		});
+		return button;
 	}
 	
 	private HorizontalLayout createHorizontalLayout() {
@@ -327,108 +349,17 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 		return header;
 	}
 	
-	private JsonNode prepareOrderContent() {
-		String encodedEmail = null;
-    	try {
-			encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8.toString());
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-    	
-    	RestClient client = new RestClient();
-    	ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/purchases/history?email=" + encodedEmail, null, null);
-    	
-    	JsonNode purchaseOrderNode = data.getNode();
-    	return purchaseOrderNode;
-    	
-		
-	}
-	
 	private VerticalLayout getManageProductsLayout() {
     	VerticalLayout main = new VerticalLayout();
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        H4 h4 = new H4();
-        H4 h42 = new H4();
-        H4 h43 = new H4();
-        H4 h44 = new H4();
-        H4 h45 = new H4();
-        Button buttonPrimary = new Button();
-        HorizontalLayout layoutRow2 = new HorizontalLayout();
-        H5 h5 = new H5();
-        H5 h52 = new H5();
-        H5 h53 = new H5();
-        H5 h54 = new H5();
-        H5 h55 = new H5();
-        Button buttonSecondary = new Button();
+    	
+    	HorizontalLayout labeHorizontalLayout = headerManageProductsLayout();
+    	main.add(labeHorizontalLayout);
+    	
+    	
+       
         main.setWidth("100%");
         main.setHeight("752px");
-        layoutRow.setWidthFull();
-        main.setFlexGrow(1.0, layoutRow);
-        layoutRow.addClassName(Gap.MEDIUM);
-        layoutRow.setWidth("100%");
-        layoutRow.setHeight("50px");
-        layoutRow.setAlignItems(Alignment.CENTER);
-        layoutRow.setJustifyContentMode(JustifyContentMode.START);
-        h4.setText("Sr.No");
-        h4.setWidth("98px");
-        h4.setHeight("29px");
-        h42.setText("Product Name");
-        h42.setWidth("239px");
-        h42.setHeight("29px");
-        h43.setText("Quantity");
-        h43.setWidth("157px");
-        h43.setHeight("29px");
-        h44.setText("Price");
-        h44.setWidth("166px");
-        h44.setHeight("29px");
-        h45.setText("City");
         
-        buttonPrimary.setText("Add Product");
-        buttonPrimary.getStyle().set("flex-grow", "1");
-        buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        layoutRow2.setWidthFull();
-        main.setFlexGrow(1.0, layoutRow2);
-        layoutRow2.addClassName(Gap.MEDIUM);
-        layoutRow2.setWidth("100%");
-        layoutRow2.setHeight("55px");
-        layoutRow2.setAlignItems(Alignment.CENTER);
-        layoutRow2.setJustifyContentMode(JustifyContentMode.START);
-        h5.setText("1");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, h5);
-        h5.setWidth("98px");
-        h5.setHeight("50px");
-        h52.setText("Cordless Hammer Drill");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, h52);
-        h52.setWidth("239px");
-        h52.setHeight("50px");
-        h53.setText("15");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, h53);
-        h53.setWidth("157px");
-        h53.setHeight("50px");
-        h54.setText("€ 259.99");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.END, h55);
-        h55.setWidth("327px");
-        h55.setHeight("55px");
-        buttonSecondary.setText("Edit");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.START, buttonSecondary);
-        buttonSecondary.setWidth("min-content");
-        buttonSecondary.setHeight("20px");
-        buttonSecondary.setText("Delete");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.START, buttonSecondary);
-        buttonSecondary.setWidth("min-content");
-        buttonSecondary.setHeight("20px");
-        main.add(layoutRow);
-        layoutRow.add(h4);
-        layoutRow.add(h42);
-        layoutRow.add(h43);
-        layoutRow.add(h44);
-        layoutRow.add(buttonPrimary);
-        main.add(layoutRow2);
-        layoutRow2.add(h5);
-        layoutRow2.add(h52);
-        layoutRow2.add(h53);
-        layoutRow2.add(h54);
-        layoutRow2.add(buttonSecondary);
         return main;
 	}
 	
