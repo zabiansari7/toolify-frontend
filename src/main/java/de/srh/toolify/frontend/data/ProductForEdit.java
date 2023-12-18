@@ -9,8 +9,8 @@ public class ProductForEdit extends Product {
     private Long productId;
     private String name;
     private String description;
-    private BigDecimal price;
-    private Integer quantity;
+    private String price;
+    private String quantity;
     private String manufacturer;
     private String voltage;
     private String productDimensions;
@@ -21,7 +21,7 @@ public class ProductForEdit extends Product {
     private String colour;
     private String batteriesRequired;
     private String image;
-    private Long categoryTo;
+    private String categoryTo;
 
     @JsonIgnore
     private Category category;
@@ -52,19 +52,19 @@ public class ProductForEdit extends Product {
         this.description = description;
     }
 
-    public BigDecimal getPrice() {
+    public String getPrice() {
         return price;
     }
 
-    public void setPrice(BigDecimal price) {
+    public void setPrice(String price) {
         this.price = price;
     }
 
-    public Integer getQuantity() {
+    public String getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Integer quantity) {
+    public void setQuantity(String quantity) {
         this.quantity = quantity;
     }
 
@@ -148,11 +148,11 @@ public class ProductForEdit extends Product {
         this.image = image;
     }
 
-    public Long getCategoryTo() {
+    public String getCategoryTo() {
         return categoryTo;
     }
 
-    public void setCategoryTo(Long categoryTo) {
+    public void setCategoryTo(String categoryTo) {
         this.categoryTo = categoryTo;
     }
 

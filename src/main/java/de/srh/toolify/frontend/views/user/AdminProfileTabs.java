@@ -728,8 +728,6 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         category.addValueChangeListener(e -> {
             this.setCategorySelectValue(e.getValue());
             category.getElement().setProperty("newCategoryId", e.getValue().getCategoryId());
-            System.out.println("HERE ::::::::: " + this.getCategorySelectValue().getCategoryId());
-            System.out.println("THEREEEEE" + category.getElement().getProperty("newCategoryId"));
         });
 
         layoutRow6.setWidthFull();
