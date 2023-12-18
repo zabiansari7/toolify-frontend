@@ -156,7 +156,7 @@ public class RegisterView extends Composite<VerticalLayout> {
         defaultStreetName.addValueChangeListener(event -> {
         	String value = event.getValue();
         	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
-        	firstname.setInvalid(!isValid);
+        	defaultStreetName.setInvalid(!isValid);
         });
         
         defaultStreetNumber.setLabel("Number");
@@ -194,7 +194,7 @@ public class RegisterView extends Composite<VerticalLayout> {
         defaultCity.addValueChangeListener(event -> {
         	String value = event.getValue();
         	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
-        	firstname.setInvalid(!isValid);
+        	defaultCity.setInvalid(!isValid);
         });
         
         layoutRow.addClassName(Gap.MEDIUM);
