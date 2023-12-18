@@ -105,6 +105,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     String emailFromSession = HelperUtil.getEmailFromSession();
     Category categorySelectValue;
     
+    private boolean valuesMatches;
+    
 	public AdminProfileTabs() {
 		binder.bindInstanceFields(this);
 		binderProduct.bindInstanceFields(this);
@@ -141,15 +143,36 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         adminDetailsFormLayout.setWidth("100%");
         
         firstname.setLabel("First Name");
+        firstname.setValueChangeMode(ValueChangeMode.EAGER);
         firstname.setRequired(true);
+        firstname.setPattern("^[a-zA-Z]*$");
+        firstname.setMaxLength(30);
+        firstname.setRequiredIndicatorVisible(true);
+        firstname.setClearButtonVisible(true);
+        firstname.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	firstname.setInvalid(!isValid);	
+        });
         
         lastname.setLabel("Last Name");
+        lastname.setValueChangeMode(ValueChangeMode.EAGER);
+        lastname.setMaxLength(30);
+        lastname.setRequiredIndicatorVisible(true);
         lastname.setRequired(true);
+        lastname.setPattern("^[a-zA-Z]*$");
+        lastname.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("^[a-zA-Z]*$"));
+        	lastname.setInvalid(!isValid);
+        });
         
         email.setLabel("Email");
         
         mobile.setLabel("Mobile");
+        mobile.setPattern("^\\+\\d{0,15}$");
         mobile.setRequired(true);
+        mobile.setMaxLength(15);
         mobile.addValueChangeListener(event -> {
             String value = event.getValue();
             boolean isValid = value.matches("^\\+\\d{0,15}$");
@@ -162,8 +185,18 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 			}
             
         });
+        
         defaultStreetName.setLabel("Street");
+        defaultStreetName.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultStreetName.setRequiredIndicatorVisible(true);
+        defaultStreetName.setPattern("^[a-zA-Z]*$");
         defaultStreetName.setRequired(true);
+        defaultStreetName.setMaxLength(30);
+        defaultStreetName.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	defaultStreetName.setInvalid(!isValid);
+        });
         
         defaultStreetNumber.setLabel("Number");
         defaultStreetNumber.setRequired(true);
@@ -189,7 +222,15 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
       
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
-        defaultCity.setRequired(true);
+        defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultCity.setPattern("^[a-zA-Z ]*$");;
+        defaultCity.setMaxLength(30);
+        defaultCity.setRequiredIndicatorVisible(true);
+        defaultCity.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("^[a-zA-Z ]*$"));
+        	defaultCity.setInvalid(!isValid);
+        });
         
         adminDetailsHorizontalLayout.addClassName(Gap.MEDIUM);
         adminDetailsHorizontalLayout.setWidth("100%");
@@ -220,6 +261,7 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         User admin = getUserByEmail();
         binder.setBean(admin);
         binder.setReadOnly(true);
+        
 
         adminDetailsEditButton.addClickListener(e -> {
         	binder.setReadOnly(false);
@@ -238,6 +280,10 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         });
         
         adminDetailsSaveButton.addClickListener(e -> {
+        	if (binder.validate().isOk() == false) {
+        		showNotification("Please correct your input", NotificationVariant.LUMO_ERROR);
+    			return;
+			}
         	if (binder.getFields().anyMatch(a -> a.isEmpty())) {
     			showNotification("Empty fields detected !", NotificationVariant.LUMO_ERROR);
     			return;
@@ -590,6 +636,14 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 
 	public void setCategorySelectValue(Category categorySelectValue) {
 		this.categorySelectValue = categorySelectValue;
+	}
+
+	public boolean isValuesMatches() {
+		return valuesMatches;
+	}
+
+	public void setValuesMatches(boolean valuesMatches) {
+		this.valuesMatches = valuesMatches;
 	}
 	
 }
