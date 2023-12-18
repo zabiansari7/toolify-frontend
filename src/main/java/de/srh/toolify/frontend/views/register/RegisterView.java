@@ -70,11 +70,26 @@ public class RegisterView extends Composite<VerticalLayout> {
         formLayout2Col.setWidth("100%");
         firstname.setLabel("First Name");
         firstname.setRequired(true);
+        firstname.setPattern("^[a-zA-Z]*$");
+        firstname.setMaxLength(30);
         firstname.setRequiredIndicatorVisible(true);
         firstname.setClearButtonVisible(true);
+        firstname.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	firstname.setInvalid(!isValid);	
+        });
         
         lastname.setLabel("Last Name");
+        lastname.setMaxLength(30);
         lastname.setRequiredIndicatorVisible(true);
+        lastname.setRequired(true);
+        lastname.setPattern("^[a-zA-Z]*$");
+        lastname.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("^[a-zA-Z]*$"));
+        	lastname.setInvalid(!isValid);
+        });
         
         email.setLabel("Email");
         email.setRequiredIndicatorVisible(true);
@@ -83,7 +98,7 @@ public class RegisterView extends Composite<VerticalLayout> {
         email.addValueChangeListener(event -> {
         	String value = event.getValue();
         	boolean isValid = value.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9]+\\.[A-Za-z]{2,}$");
-        	 email.setInvalid(!isValid);
+        	email.setInvalid(!isValid);
         });
         
         
@@ -128,10 +143,17 @@ public class RegisterView extends Composite<VerticalLayout> {
         
         defaultStreetName.setLabel("Street");
         defaultStreetName.setRequiredIndicatorVisible(true);
+        defaultStreetName.setPattern("^[a-zA-Z]*$");
         defaultStreetName.setRequired(true);
         defaultStreetName.setMaxLength(30);
+        defaultStreetName.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	firstname.setInvalid(!isValid);
+        });
         
         defaultStreetNumber.setLabel("Number");
+        defaultStreetNumber.setRequiredIndicatorVisible(true);
         defaultStreetNumber.setValueChangeMode(ValueChangeMode.EAGER);
         defaultStreetNumber.addValueChangeListener(event -> {
             String newValue = event.getValue().replaceAll(",", "");
@@ -139,8 +161,9 @@ public class RegisterView extends Composite<VerticalLayout> {
         defaultStreetNumber.setRequired(true);
         defaultStreetNumber.setPattern("\\d{0,3}");
         defaultStreetNumber.setMaxLength(3);
-        defaultStreetNumber.setWidth("min-content");
+        //defaultStreetNumber.setWidth("min-content");
         });
+        
         
        
         defaultPincode.setLabel("Pincode");
@@ -157,7 +180,14 @@ public class RegisterView extends Composite<VerticalLayout> {
         
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
+        defaultCity.setPattern("^[a-zA-Z]*$");
+        defaultCity.setMaxLength(30);
         defaultCity.setRequiredIndicatorVisible(true);
+        defaultCity.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	firstname.setInvalid(!isValid);
+        });
         
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");

@@ -253,7 +253,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
 					createLabel(String.valueOf(purchaseHistory.getInvoice())), 
 					createLabel(String.valueOf(purchaseHistory.getDate())), 
 					createLabel(String.valueOf("€" + purchaseHistory.getTotalPrice())),
-					createButton(purchaseHistory.getInvoice()));
+					createDownloadInvoiceButton(purchaseHistory.getInvoice()));
 			main.add(itemHorizontalLayout);
 		}
     	
@@ -262,93 +262,32 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
     
     private VerticalLayout getManageAddressesLayout() {
     	VerticalLayout main = new VerticalLayout();
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        H4 h4 = new H4();
-        H4 h42 = new H4();
-        H4 h43 = new H4();
-        H4 h44 = new H4();
-        H4 h45 = new H4();
-        Button buttonPrimary = new Button();
-        HorizontalLayout layoutRow2 = new HorizontalLayout();
-        H5 h5 = new H5();
-        H5 h52 = new H5();
-        H5 h53 = new H5();
-        H5 h54 = new H5();
-        H5 h55 = new H5();
-        Button buttonSecondary = new Button();
-        main.setWidth("100%");
-        main.setHeight("752px");
-        layoutRow.setWidthFull();
-        main.setFlexGrow(1.0, layoutRow);
-        layoutRow.addClassName(Gap.MEDIUM);
-        layoutRow.setWidth("100%");
-        layoutRow.setHeight("50px");
-        layoutRow.setAlignItems(Alignment.CENTER);
-        layoutRow.setJustifyContentMode(JustifyContentMode.START);
-        h4.setText("Sr.No");
-        h4.setWidth("98px");
-        h4.setHeight("29px");
-        h42.setText("Street Name");
-        h42.setWidth("239px");
-        h42.setHeight("29px");
-        h43.setText("Street Number");
-        h43.setWidth("157px");
-        h43.setHeight("29px");
-        h44.setText("Postcode");
-        h44.setWidth("166px");
-        h44.setHeight("29px");
-        h45.setText("City");
-        layoutRow.setAlignSelf(FlexComponent.Alignment.CENTER, h45);
-        h45.setWidth("327px");
-        h45.setHeight("29px");
-        buttonPrimary.setText("Add Address");
-        buttonPrimary.getStyle().set("flex-grow", "1");
-        buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        layoutRow2.setWidthFull();
-        main.setFlexGrow(1.0, layoutRow2);
-        layoutRow2.addClassName(Gap.MEDIUM);
-        layoutRow2.setWidth("100%");
-        layoutRow2.setHeight("55px");
-        layoutRow2.setAlignItems(Alignment.CENTER);
-        layoutRow2.setJustifyContentMode(JustifyContentMode.START);
-        h5.setText("1");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, h5);
-        h5.setWidth("98px");
-        h5.setHeight("50px");
-        h52.setText("behram");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, h52);
-        h52.setWidth("239px");
-        h52.setHeight("50px");
-        h53.setText("18");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, h53);
-        h53.setWidth("157px");
-        h53.setHeight("50px");
-        h54.setText("400051");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.START, h54);
-        h54.setWidth("166px");
-        h54.setHeight("50px");
-        h55.setText("Mumbai");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.END, h55);
-        h55.setWidth("327px");
-        h55.setHeight("55px");
-        buttonSecondary.setText("Delete Address");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.START, buttonSecondary);
-        buttonSecondary.setWidth("min-content");
-        buttonSecondary.setHeight("20px");
-        main.add(layoutRow);
-        layoutRow.add(h4);
-        layoutRow.add(h42);
-        layoutRow.add(h43);
-        layoutRow.add(h44);
-        layoutRow.add(h45);
-        layoutRow.add(buttonPrimary);
-        main.add(layoutRow2);
-        layoutRow2.add(h5);
-        layoutRow2.add(h52);
-        layoutRow2.add(h53);
-        layoutRow2.add(h54);
-        layoutRow2.add(h55);
-        layoutRow2.add(buttonSecondary);
+    	
+    	HorizontalLayout labelHorizontalLayout = headerAddressLayout(main);
+    	main.add(labelHorizontalLayout);
+    	
+    	JsonNode addressesNode = getAddressByEmail();
+    	ObjectMapper mapper = new ObjectMapper();
+    	int count = 0;
+    	for (JsonNode addressNode : addressesNode) {
+    		count++;
+			Address address = mapper.convertValue(addressNode, Address.class);
+			
+			HorizontalLayout addressHorizontalLayout = createHorizontalLayout();
+			addressHorizontalLayout.add(
+					createLabel(String.valueOf(count)), 
+					createLabel(address.getStreetName()), 
+					createLabel(String.valueOf(address.getStreetNumber())), 
+					createLabel(String.valueOf(address.getPostCode())),
+					createLabel(address.getCityName()), 
+					createDeleteAddressButton("Delete Address", ButtonVariant.LUMO_ERROR, address.getAddressID()));
+			
+			
+			main.add(addressHorizontalLayout);
+		}
+    	
+    	
+    	
         return main;
 	}
     
@@ -398,13 +337,19 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
 		return horizontalLayout;
 	}
 	
-	private HorizontalLayout headerLayout() {
+	private HorizontalLayout headerOrderHistoryLayout() {
 		HorizontalLayout h = createHorizontalLayout();
 		h.add(createHeader("SrNo."), createHeader("Invoice Number"),createHeader("Date"), createHeader("Total Price"), createHeader("Invoice PDF"));
 		return h;
 	}
 	
-	private Button createButton(int invoiceNo) {
+	private HorizontalLayout headerAddressLayout(VerticalLayout mainLayout) {
+		HorizontalLayout h = createHorizontalLayout();
+		h.add(createHeader("SrNo."), createHeader("Street Name"),createHeader("Street Number"), createHeader("Postcode"), createHeader("City"), createAddAddressButton(mainLayout));
+		return h;
+	}
+	
+	private Button createDownloadInvoiceButton(int invoiceNo) {
 		Button button = new Button("Downlaod PDF");
 		button.getElement().setProperty("invoiceNo", invoiceNo);
 		button.setWidth("20%");
@@ -412,11 +357,41 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
 		return button;
 	}
 	
+	private Button createDeleteAddressButton(String text, ButtonVariant variant, Long addressId) {
+		Button button = new Button(text);
+		//button.setWidth("20%");
+		button.addClassName("clickable-button");
+		button.addThemeVariants(variant);
+		button.addClickListener(event -> {
+			deleteAddressById(addressId);
+			button.getParent().get().removeFromParent();
+			showNotification("Address deleted successfully", NotificationVariant.LUMO_ERROR);
+		});
+		return button;
+	}
+	
+	private Button createAddAddressButton(VerticalLayout mainLayout) {
+		Button button = new Button("Add Address");
+		//button.setWidth("20%");
+		button.addClassName("clickable-button");
+		button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		button.addClickListener(event -> {
+			Dialog dialog = new Dialog();
+			dialog.getElement().setAttribute("aria-label", "Create new address");
+			mainLayout.add(dialog);
+			dialog.add(prepareDialogComponent(dialog, mainLayout));
+			dialog.open();
+		});
+		return button;
+	}
+	
+	
+	
 	private void showNotification(String text, NotificationVariant variant) {
 		Notification notification = Notification
 				.show(text);
 		notification.setDuration(5000);
-		notification.setPosition(Position.BOTTOM_CENTER);
+		notification.setPosition(Position.TOP_CENTER);
 		notification.addThemeVariants(variant);
 	}
 	
@@ -433,6 +408,8 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
     	
     	JsonNode purchaseOrderNode = data.getNode();
     	return purchaseOrderNode;
+    	
+		
 	}
 	
 	private void showPdfInBrowser(byte[] pdfBytes) {
@@ -441,4 +418,146 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         
         // now check link in the bookmark
     }
+	
+	private JsonNode getAddressByEmail() {
+		String encodedEmail = null;
+    	try {
+			encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8.toString());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+    	
+    	RestClient client = new RestClient();
+    	ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + encodedEmail, null, null);
+    	
+    	JsonNode addresses = data.getNode();
+    	return addresses;
+	}
+	
+	private void deleteAddressById(Long addressId) {
+		RestClient client = new RestClient();
+		client.requestHttp("DELETE", "http://localhost:8080/private/addresses/" + addressId, null, null);		
+	}
+	
+	private VerticalLayout prepareDialogComponent(Dialog dialog, VerticalLayout main) {
+		VerticalLayout dialogVerticalLayout = new VerticalLayout();
+		HorizontalLayout layoutRow = new HorizontalLayout();
+        TextField streetName = new TextField();
+        TextField streetNumber = new TextField();
+        HorizontalLayout layoutRow2 = new HorizontalLayout();
+        HorizontalLayout layoutRow3 = new HorizontalLayout();
+        TextField pincode = new TextField();
+        TextField city = new TextField();
+        HorizontalLayout layoutRow4 = new HorizontalLayout();
+        Button saveButton = new Button();
+        Button cancelButton = new Button();
+        dialogVerticalLayout.setWidth("100%");
+        dialogVerticalLayout.getStyle().set("flex-grow", "1");
+        layoutRow.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow);
+        layoutRow.addClassName(Gap.MEDIUM);
+        //layoutRow.setWidth("1100px");
+        layoutRow.setHeight("75px");
+        layoutRow.setAlignItems(Alignment.CENTER);
+        layoutRow.setJustifyContentMode(JustifyContentMode.CENTER);
+        streetName.setLabel("Street");
+        streetName.setRequiredIndicatorVisible(true);
+        streetName.setRequired(true);
+        streetName.setMaxLength(30);
+        streetNumber.setLabel("Number");
+        streetNumber.setRequiredIndicatorVisible(true);
+        streetNumber.setValueChangeMode(ValueChangeMode.EAGER);
+        streetNumber.addValueChangeListener(event -> {
+            String newValue = event.getValue().replaceAll(",", "");
+            streetNumber.setValue(newValue);
+            streetNumber.setRequired(true);
+            streetNumber.setPattern("\\d{0,3}");
+            streetNumber.setMaxLength(3);
+        //defaultStreetNumber.setWidth("min-content");
+        });
+        //layoutRow2.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
+        layoutRow2.addClassName(Gap.MEDIUM);
+        layoutRow2.setWidth("100%");
+        layoutRow2.setHeight("60px");
+        layoutRow3.setHeightFull();
+        layoutRow2.setFlexGrow(1.0, layoutRow3);
+        layoutRow3.addClassName(Gap.MEDIUM);
+        layoutRow3.setWidthFull();
+        layoutRow3.setHeight("75px");
+        layoutRow3.setAlignItems(Alignment.CENTER);
+        layoutRow3.setJustifyContentMode(JustifyContentMode.CENTER);
+        pincode.setLabel("Pincode");
+        pincode.setValueChangeMode(ValueChangeMode.EAGER);
+        pincode.addValueChangeListener(event -> {
+            String newValue = event.getValue().replaceAll(",", "");
+            pincode.setValue(newValue);
+        });
+        pincode.setPattern("\\d{0,5}");
+        pincode.setWidth("min-content");
+        pincode.setMaxLength(5);
+        pincode.setRequired(true);
+        pincode.setRequiredIndicatorVisible(true);
+        city.setLabel("City");
+        city.setWidth("min-content");
+        city.setMaxLength(30);
+        city.setRequiredIndicatorVisible(true);
+        layoutRow4.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow4);
+        layoutRow4.addClassName(Gap.MEDIUM);
+        layoutRow4.setHeight("75px");
+        layoutRow4.setAlignItems(Alignment.CENTER);
+        layoutRow4.setJustifyContentMode(JustifyContentMode.CENTER);
+        saveButton.setText("Save");
+        layoutRow4.setAlignSelf(FlexComponent.Alignment.CENTER, saveButton);
+        saveButton.setWidth("min-content");
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        cancelButton.setText("Cancel");
+        layoutRow4.setAlignSelf(FlexComponent.Alignment.CENTER, cancelButton);
+        cancelButton.setWidth("min-content");
+        cancelButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        dialogVerticalLayout.add(layoutRow);
+        layoutRow.add(streetName);
+        layoutRow.add(streetNumber);
+       // getContent().add(layoutRow2);
+        //layoutRow2.add(layoutRow3);
+        dialogVerticalLayout.add(layoutRow3);
+        layoutRow3.add(pincode);
+        layoutRow3.add(city);
+        dialogVerticalLayout.add(layoutRow4);
+        layoutRow4.add(saveButton);
+        layoutRow4.add(cancelButton);
+        
+        cancelButton.addClickListener(e -> {
+        	dialog.close();
+        });
+ 
+        saveButton.addClickListener(e -> {
+        	addAddress(streetName.getValue(), Integer.valueOf(streetNumber.getValue()), Integer.valueOf(pincode.getValue()), city.getValue());
+        	showNotification("Address saved successfully", NotificationVariant.LUMO_SUCCESS);
+        	dialog.close();
+        	main.removeAll();
+        	main.getElement().executeJs("location.reload(true)");
+        });
+		return dialogVerticalLayout;
+	}
+	
+	private JsonNode addAddress(String streetName, int streetNumber, int postcode, String city) {
+
+    	AddAddress address = new AddAddress();
+    	address.setStreetName(streetName);
+    	address.setStreetNumber(streetNumber);
+    	address.setPostCode(postcode);
+    	address.setCityName(city);
+    	
+    	UserForAddress user = new UserForAddress();
+    	user.setEmail(emailFromSession);
+    	address.setUser(user);
+    	
+    	RestClient client = new RestClient();
+    	ResponseData data = client.requestHttp("POST", "http://localhost:8080/private/addresses/address", address, AddAddress.class);
+    	
+    	JsonNode postMessage = data.getNode();
+    	return postMessage;
+	}
 }
