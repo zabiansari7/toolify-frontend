@@ -1,5 +1,7 @@
 package de.srh.toolify.frontend.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -20,7 +22,9 @@ public class Product {
     private String batteriesRequired;
     private String image;
     private Category category;
+	@JsonIgnore
 	private Instant createdOn;
+	@JsonIgnore
 	private Instant updatedOn;
 	
 	public Product() {}

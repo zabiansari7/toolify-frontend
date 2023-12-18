@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Category {
 
+	@JsonIgnore
+	private Long categoryId;
+
 	private String categoryName;
 	@JsonIgnore
     private Instant createdOn;
@@ -35,6 +38,13 @@ public class Category {
 	public void setUpdatedOn(Instant updatedOn) {
 		this.updatedOn = updatedOn;
 	}
-	
-	
+
+
+	public Long getCategoryId() {
+		return categoryId;
+	}
+
+	public void setCategoryId(Long categoryId) {
+		this.categoryId = categoryId;
+	}
 }

@@ -40,7 +40,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @PageTitle("AdminProfile | Toolify")
 @Route(value = "admin", layout = MainLayout.class)
@@ -113,11 +112,11 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     private void setTabSheetSampleData(TabSheet tabSheet, Binder<User> binder) {
         tabSheet.add("Admin Details", new Div(getAdminDetailsLayout(binder))).addClassName("tabStyle");
         tabSheet.add("Users Order History", new Div(getAdminOrdersLayout())).addClassName("tabStyle");
-        tabSheet.add("Manage Products", new Div(getManageProductsLayout())).addClassName("tabStyle");
-        tabSheet.add("Manage Categoty", new Div(getManageProductsLayout())).addClassName("tabStyle");
+        tabSheet.add("Manage Products", new Div(getManageProductsLayout(binderProduct))).addClassName("tabStyle");
+        tabSheet.add("Manage Categoty", new Div(getManageCategoryLayout())).addClassName("tabStyle");
     }
-    
-private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {   
+
+    private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 	    getContent().setWidth("100%"); 
         getContent().getStyle().set("flex-grow", "1");
         getContent().setJustifyContentMode(JustifyContentMode.START);
@@ -368,28 +367,41 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 		return header;
 	}
 	
-	private HorizontalLayout createEditDeleteLayout() {
+	private HorizontalLayout createEditDeleteLayout(Binder<Product> binderProduct, VerticalLayout mainLayout,Long productId, Long categoryId) {
 		HorizontalLayout h = createHorizontalLayout();
-		h.add(createEditButton(), createDeleteButton());
+		h.add(createEditButton(binderProduct, mainLayout, productId, categoryId), createDeleteButton(productId));
 		return h;
 	}
 	
-	private Button createEditButton() {
+	private Button createEditButton(Binder<Product> binderProduct, VerticalLayout mainLayout, Long productId, Long categoryId) {
 		Button button = new Button("Edit");
+        button.getElement().setAttribute("productId", String.valueOf(productId));
+        button.getElement().setAttribute("categoryId", String.valueOf(categoryId));
 		button.setWidth("50%");
 		button.addClassName("clickable-button");
+        button.addClickListener(e -> {
+            Dialog dialog = new Dialog();
+            dialog.getElement().setAttribute("aria-label", "Edit Product");
+            mainLayout.add(dialog);
+            dialog.add(createEditProductDialog(binderProduct, productId, dialog, mainLayout));
+            dialog.open();
+        });
 		return button;
 	}
 	
-	private Button createDeleteButton() {
+	private Button createDeleteButton(Long productId) {
 		Button button = new Button("Delete");
+        button.getElement().setAttribute("productId", String.valueOf(productId));
 		button.setWidth("50%");
 		button.addClassName("clickable-button");
 		button.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        button.addClickListener(e -> {
+
+        });
 		return button;
 	}
 	
-	private VerticalLayout getManageProductsLayout() {
+	private VerticalLayout getManageProductsLayout(Binder<Product> binderProduct) {
     	VerticalLayout main = new VerticalLayout();
     	
     	HorizontalLayout labeHorizontalLayout = headerManageProductsLayout(main);
@@ -409,7 +421,7 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 					createLabel(product.getName()), 
 					createLabel(String.valueOf(product.getQuantity())), 
 					createLabel("€" + String.valueOf(product.getPrice())),
-					createEditDeleteLayout());
+					createEditDeleteLayout(binderProduct, main, product.getProductId(), product.getCategory().getCategoryId()));
 					main.add(addressHorizontalLayout);
     	}
         return main;
@@ -575,5 +587,160 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 	public void setCategorySelectValue(Category categorySelectValue) {
 		this.categorySelectValue = categorySelectValue;
 	}
-	
+
+    private VerticalLayout getManageCategoryLayout() {
+        VerticalLayout main = new VerticalLayout();
+
+        return new VerticalLayout();
+    }
+
+    private VerticalLayout createEditProductDialog(Binder<Product> binderProduct, Long productId,  Dialog dialog, VerticalLayout main) {
+        VerticalLayout dialogVerticalLayout = new VerticalLayout();
+
+        dialogVerticalLayout.setWidth("100%");
+        dialogVerticalLayout.getStyle().set("flex-grow", "1");
+        layoutRowDialog.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRowDialog);
+        layoutRowDialog.addClassName(Gap.MEDIUM);
+        //layoutRow.setWidth("1100px");
+        layoutRowDialog.setHeight("75px");
+        layoutRowDialog.setAlignItems(Alignment.CENTER);
+        layoutRowDialog.setJustifyContentMode(JustifyContentMode.CENTER);
+        name.setLabel("Name");
+        //name.setWidth("180px");
+        description.setLabel("Description");
+        //description.setWidth("180px");
+        price.setLabel("Price");
+        //price.setWidth("180px");
+        layoutRow2.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
+        layoutRow2.addClassName(Gap.MEDIUM);
+        layoutRow2.setWidthFull();
+        layoutRow2.setHeight("75px");
+        layoutRow2.setAlignItems(Alignment.CENTER);
+        layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
+        quantity.setLabel("Quantity");
+        //quantity.setWidth("180px");
+        voltage.setLabel("Voltage");
+        layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, voltage);
+        //voltage.setWidth("180px");
+        productDimensions.setLabel("Product Dimensions");
+        //productDimensions.setWidth("180px");
+        layoutRow3.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow3);
+        layoutRow3.addClassName(Gap.MEDIUM);
+        //layoutRow3.setWidth("1100px");
+        layoutRow3.setHeight("75px");
+        layoutRow3.setAlignItems(Alignment.CENTER);
+        layoutRow3.setJustifyContentMode(JustifyContentMode.CENTER);
+        itemWeight.setLabel("Item Weight");
+        //itemWeight.setWidth("180px");
+        bodyMaterial.setLabel("Body Material");
+        //bodyMaterial.setWidth("180px");
+        itemModelNumber.setLabel("Item Model Number");
+        //itemModelNumber.setWidth("180px");
+        layoutRow4.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow4);
+        layoutRow4.addClassName(Gap.MEDIUM);
+        //layoutRow4.setWidth("1100px");
+        layoutRow4.setHeight("75px");
+        layoutRow4.setAlignItems(Alignment.CENTER);
+        layoutRow4.setJustifyContentMode(JustifyContentMode.CENTER);
+        design.setLabel("Design");
+        //design.setWidth("180px");
+        colour.setLabel("Colour");
+        //colour.setWidth("180px");
+        batteriesRequired.setLabel("Batteries Required");
+        //batteriesRequired.setWidth("180px");
+        layoutRow5.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow5);
+        layoutRow5.addClassName(Gap.MEDIUM);
+        //layoutRow5.setWidth("1100px");
+        layoutRow5.setHeight("75px");
+        layoutRow5.setAlignItems(Alignment.CENTER);
+        layoutRow5.setJustifyContentMode(JustifyContentMode.CENTER);
+        image.setLabel("Image URL");
+        //image.setWidth("180px");
+        category.setLabel("Category");
+        category.setPlaceholder("Select Category");
+        List<Category> categories = HelperUtil.getAllCategoriesAsClass();
+        category.setItems(categories);
+        category.addValueChangeListener(e -> this.setCategorySelectValue(e.getValue()));
+
+        layoutRow6.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow6);
+        layoutRow6.addClassName(Gap.MEDIUM);
+        //layoutRow6.setWidth("1100px");
+        layoutRow6.getStyle().set("flex-grow", "1");
+        layoutRow6.setAlignItems(Alignment.CENTER);
+        layoutRow6.setJustifyContentMode(JustifyContentMode.CENTER);
+        saveButton.setText("Save");
+        saveButton.setWidth("min-content");
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        cancelButton.setText("Cancel");
+        cancelButton.setWidth("min-content");
+        cancelButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        cancelButton.addClickListener(e -> {
+            dialog.close();
+        });
+        dialogVerticalLayout.add(layoutRowDialog);
+        layoutRowDialog.add(name);
+        layoutRowDialog.add(description);
+        layoutRowDialog.add(price);
+        dialogVerticalLayout.add(layoutRow2);
+        layoutRow2.add(quantity);
+        layoutRow2.add(voltage);
+        layoutRow2.add(productDimensions);
+        dialogVerticalLayout.add(layoutRow3);
+        layoutRow3.add(itemWeight);
+        layoutRow3.add(bodyMaterial);
+        layoutRow3.add(itemModelNumber);
+        dialogVerticalLayout.add(layoutRow4);
+        layoutRow4.add(design);
+        layoutRow4.add(colour);
+        layoutRow4.add(batteriesRequired);
+        dialogVerticalLayout.add(layoutRow5);
+        layoutRow5.add(image);
+        layoutRow5.add(category);
+        dialogVerticalLayout.add(layoutRow6);
+        layoutRow6.add(saveButton);
+        layoutRow6.add(cancelButton);
+
+        category.setItemLabelGenerator(Category::getCategoryName);
+
+        JsonNode productNode = getProductById(productId);
+        ObjectMapper mapper = HelperUtil.getObjectMapper();
+        ProductForEdit product = mapper.convertValue(productNode, ProductForEdit.class);
+        binderProduct.setBean(product);
+
+        product.setProductId(productId);
+        product.setCategoryTo(product.getCategory().getCategoryId());
+
+        System.out.println("EDIT PRODUT" + product.toString());
+
+        saveButton.addClickListener(e -> {
+            editProduct(binderProduct);
+
+            showNotification("Product updated successfully", NotificationVariant.LUMO_SUCCESS);
+            dialog.close();
+            main.removeAll();
+            main.getElement().executeJs("location.reload(true)");
+        });
+
+        return dialogVerticalLayout;
+    }
+
+    private JsonNode editProduct(Binder<Product> binderProduct) {
+        System.out.println(binderProduct.getBean().toString());
+        RestClient client = new RestClient();
+        ResponseData date = client.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + binderProduct.getBean().getProductId(), binderProduct.getBean(), ProductForEdit.class);
+        return date.getNode();
+    }
+
+    private JsonNode getProductById(Long productId) {
+        RestClient client = new RestClient();
+        ResponseData data = client.requestHttp("GET", "http://localhost:8080/public/products/product/" + productId, null, null);
+        JsonNode productNode = data.getNode();
+        return productNode;
+    }
 }
