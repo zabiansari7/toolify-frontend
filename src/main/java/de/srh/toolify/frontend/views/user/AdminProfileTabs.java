@@ -49,6 +49,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 
     Binder<User> binder = new Binder<>(User.class);
     Binder<Product> binderProduct = new Binder<>(Product.class);
+    Binder<ProductForEdit> binderEditProduct = new Binder<>(ProductForEdit.class);
 	VerticalLayout adminDetailsMain = new VerticalLayout();
     FormLayout adminDetailsFormLayout = new FormLayout();
     TextField firstname = new TextField();
@@ -90,6 +91,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     
     String emailFromSession = HelperUtil.getEmailFromSession();
     Category categorySelectValue;
+    
+    private boolean valueMatches;
     
 	public AdminProfileTabs() {
 		binder.bindInstanceFields(this);
@@ -640,6 +643,13 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 
     private VerticalLayout createEditProductDialog(Binder<Product> binderProduct, Long productId,  Dialog dialog, VerticalLayout main) {
         VerticalLayout dialogVerticalLayout = new VerticalLayout();
+        
+        binderEditProduct.forField(name).bind(ProductForEdit::getName, ProductForEdit::setName);
+        binderEditProduct.forField(name).bind(ProductForEdit::getDescription, ProductForEdit::setDescription);
+        binderEditProduct.forField(name).bind(ProductForEdit::getPrice, ProductForEdit::setPrice);
+        binderEditProduct.forField(name).bind(ProductForEdit::getName, ProductForEdit::setName);
+        binderEditProduct.forField(name).bind(ProductForEdit::getName, ProductForEdit::setName);
+        binderEditProduct.forField(name).bind(ProductForEdit::getName, ProductForEdit::setName);
 
         dialogVerticalLayout.setWidth("100%");
         dialogVerticalLayout.getStyle().set("flex-grow", "1");
@@ -651,10 +661,21 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRowDialog.setAlignItems(Alignment.CENTER);
         layoutRowDialog.setJustifyContentMode(JustifyContentMode.CENTER);
         name.setLabel("Name");
+        name.setValueChangeMode(ValueChangeMode.EAGER);
+        name.setRequiredIndicatorVisible(true);
+        name.setRequired(true);
         //name.setWidth("180px");
         description.setLabel("Description");
+        description.setValueChangeMode(ValueChangeMode.EAGER);
+        description.setRequiredIndicatorVisible(true);
+        description.setRequired(true);
         //description.setWidth("180px");
         price.setLabel("Price");
+        price.setValueChangeMode(ValueChangeMode.EAGER);
+        price.setRequiredIndicatorVisible(true);
+        price.setPattern("\\d+(\\.\\d{2})?");
+        price.setMaxLength(6);
+        price.setRequired(true);
         //price.setWidth("180px");
         layoutRow2.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
@@ -664,6 +685,11 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow2.setAlignItems(Alignment.CENTER);
         layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
         quantity.setLabel("Quantity");
+        quantity.setPattern("\\d{0,3}");
+        quantity.setValueChangeMode(ValueChangeMode.EAGER);
+        quantity.setRequiredIndicatorVisible(true);
+        quantity.setMaxLength(3);
+        quantity.setRequired(true);
         //quantity.setWidth("180px");
         voltage.setLabel("Voltage");
         layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, voltage);
@@ -704,8 +730,12 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow5.setAlignItems(Alignment.CENTER);
         layoutRow5.setJustifyContentMode(JustifyContentMode.CENTER);
         image.setLabel("Image URL");
+        image.setValueChangeMode(ValueChangeMode.EAGER);
+        image.setRequiredIndicatorVisible(true);
+        image.setRequired(true);
         //image.setWidth("180px");
         category.setLabel("Category");
+        category.setRequiredIndicatorVisible(true);
         category.setPlaceholder("Select Category");
         List<Category> categories = HelperUtil.getAllCategoriesAsClass();
         category.setItems(categories);
