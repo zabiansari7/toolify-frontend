@@ -1,37 +1,27 @@
 package de.srh.toolify.frontend.views.user;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.shared.ThemeVariant;
-import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -40,25 +30,22 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
-import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-
 import de.srh.toolify.frontend.client.RestClient;
-import de.srh.toolify.frontend.data.Address;
-import de.srh.toolify.frontend.data.Category;
-import de.srh.toolify.frontend.data.EditUser;
-import de.srh.toolify.frontend.data.Product;
-import de.srh.toolify.frontend.data.PurchaseHistory;
-import de.srh.toolify.frontend.data.ResponseData;
-import de.srh.toolify.frontend.data.User;
+import de.srh.toolify.frontend.data.*;
 import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @PageTitle("AdminProfile | Toolify")
 @Route(value = "admin", layout = MainLayout.class)
 @Uses(Icon.class)
 public class AdminProfileTabs extends Composite<VerticalLayout> {
-
     private static final long serialVersionUID = 1L;
 
     Binder<User> binder = new Binder<>(User.class);
@@ -467,7 +454,7 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
 					createLabel(String.valueOf(count)), 
 					createLabel(product.getName()), 
 					createLabel(String.valueOf(product.getQuantity())), 
-					createLabel(String.valueOf(product.getPrice())), 
+					createLabel("€" + String.valueOf(product.getPrice())),
 					createEditDeleteLayout());
 					main.add(addressHorizontalLayout);
     	}
@@ -552,12 +539,8 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         category.setPlaceholder("Select Category");
         List<Category> categories = HelperUtil.getAllCategoriesAsClass();
         category.setItems(categories);
-        category.addValueChangeListener(e -> {
-        	this.setCategorySelectValue(e.getValue());
-        });
-        
-        //category.setWidth("180px");
-        //setComboBoxSampleData(category);
+        category.addValueChangeListener(e -> this.setCategorySelectValue(e.getValue()));
+
         layoutRow6.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow6);
         layoutRow6.addClassName(Gap.MEDIUM);
@@ -597,9 +580,10 @@ private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
         layoutRow6.add(saveButton);
         layoutRow6.add(cancelButton);
 
+        category.setItemLabelGenerator(Category::getCategoryName);
+
         Product product = new Product();
-        binderProduct.forField(category)
-        	.bind(Product::getCategory, Product::setCategory);
+
         binderProduct.setBean(product);
         
         saveButton.addClickListener(e -> {
