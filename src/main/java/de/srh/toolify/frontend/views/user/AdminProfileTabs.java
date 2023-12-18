@@ -90,7 +90,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     
     String emailFromSession = HelperUtil.getEmailFromSession();
     Category categorySelectValue;
-    
+
 	public AdminProfileTabs() {
 		binder.bindInstanceFields(this);
 		binderProduct.bindInstanceFields(this);
@@ -411,16 +411,15 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		return header;
 	}
 	
-	private HorizontalLayout createEditDeleteLayout(Binder<Product> binderProduct, VerticalLayout mainLayout,Long productId, Long categoryId) {
+	private HorizontalLayout createEditDeleteLayout(Binder<Product> binderProduct, VerticalLayout mainLayout,Long productId) {
 		HorizontalLayout h = createHorizontalLayout();
-		h.add(createEditButton(binderProduct, mainLayout, productId, categoryId), createDeleteButton(productId));
+		h.add(createEditButton(binderProduct, mainLayout, productId), createDeleteButton(mainLayout, productId));
 		return h;
 	}
 	
-	private Button createEditButton(Binder<Product> binderProduct, VerticalLayout mainLayout, Long productId, Long categoryId) {
+	private Button createEditButton(Binder<Product> binderProduct, VerticalLayout mainLayout, Long productId) {
 		Button button = new Button("Edit");
-        button.getElement().setAttribute("productId", String.valueOf(productId));
-        button.getElement().setAttribute("categoryId", String.valueOf(categoryId));
+        button.getElement().setProperty("productId", String.valueOf(productId));
 		button.setWidth("50%");
 		button.addClassName("clickable-button");
         button.addClickListener(e -> {
@@ -433,19 +432,27 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		return button;
 	}
 	
-	private Button createDeleteButton(Long productId) {
+	private Button createDeleteButton(VerticalLayout main, Long productId) {
 		Button button = new Button("Delete");
         button.getElement().setAttribute("productId", String.valueOf(productId));
 		button.setWidth("50%");
 		button.addClassName("clickable-button");
 		button.addThemeVariants(ButtonVariant.LUMO_ERROR);
         button.addClickListener(e -> {
-
+            deleteProductById(productId);
+            main.removeAll();
+            main.getElement().executeJs("location.reload(true)");
         });
 		return button;
 	}
-	
-	private VerticalLayout getManageProductsLayout(Binder<Product> binderProduct) {
+
+    private void deleteProductById(Long productId) {
+        RestClient client = new RestClient();
+        client.requestHttp("DELETE", "http://localhost:8080/private/admin/products/product/" + productId, null, null);
+
+    }
+
+    private VerticalLayout getManageProductsLayout(Binder<Product> binderProduct) {
     	VerticalLayout main = new VerticalLayout();
     	
     	HorizontalLayout labeHorizontalLayout = headerManageProductsLayout(main);
@@ -465,7 +472,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 					createLabel(product.getName()), 
 					createLabel(String.valueOf(product.getQuantity())), 
 					createLabel("€" + String.valueOf(product.getPrice())),
-					createEditDeleteLayout(binderProduct, main, product.getProductId(), product.getCategory().getCategoryId()));
+					createEditDeleteLayout(binderProduct, main, product.getProductId()));
 					main.add(addressHorizontalLayout);
     	}
         return main;
@@ -639,6 +646,12 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     }
 
     private VerticalLayout createEditProductDialog(Binder<Product> binderProduct, Long productId,  Dialog dialog, VerticalLayout main) {
+        JsonNode productNode = getProductById(productId);
+        ObjectMapper mapper = HelperUtil.getObjectMapper();
+        ProductForEdit product = mapper.convertValue(productNode, ProductForEdit.class);
+        binderProduct.setBean(product);
+        category.setPlaceholder(productNode.get("category").get("categoryName").textValue());
+
         VerticalLayout dialogVerticalLayout = new VerticalLayout();
 
         dialogVerticalLayout.setWidth("100%");
@@ -705,11 +718,19 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow5.setJustifyContentMode(JustifyContentMode.CENTER);
         image.setLabel("Image URL");
         //image.setWidth("180px");
+        category = new Select<>();
         category.setLabel("Category");
-        category.setPlaceholder("Select Category");
+        //category.setPlaceholder(product.getCategory().getCategoryName());
+        category.setValue(product.getCategory());
+        category.setPlaceholder(productNode.get("category").get("categoryName").textValue());
         List<Category> categories = HelperUtil.getAllCategoriesAsClass();
         category.setItems(categories);
-        category.addValueChangeListener(e -> this.setCategorySelectValue(e.getValue()));
+        category.addValueChangeListener(e -> {
+            this.setCategorySelectValue(e.getValue());
+            category.getElement().setProperty("newCategoryId", e.getValue().getCategoryId());
+            System.out.println("HERE ::::::::: " + this.getCategorySelectValue().getCategoryId());
+            System.out.println("THEREEEEE" + category.getElement().getProperty("newCategoryId"));
+        });
 
         layoutRow6.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow6);
@@ -751,19 +772,15 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow6.add(cancelButton);
 
         category.setItemLabelGenerator(Category::getCategoryName);
-
-        JsonNode productNode = getProductById(productId);
-        ObjectMapper mapper = HelperUtil.getObjectMapper();
-        ProductForEdit product = mapper.convertValue(productNode, ProductForEdit.class);
-        binderProduct.setBean(product);
-
         product.setProductId(productId);
-        product.setCategoryTo(product.getCategory().getCategoryId());
-
-        System.out.println("EDIT PRODUT" + product.toString());
-
         saveButton.addClickListener(e -> {
-            editProduct(binderProduct);
+            if (this.getCategorySelectValue() == null) {
+                product.setCategoryTo(productNode.get("category").get("categoryId").asLong());
+            } else {
+                product.setCategoryTo(this.getCategorySelectValue().getCategoryId());
+                System.out.println("IS UT THERE :: " + product.getCategoryTo());
+            }
+            editProduct(productId);
 
             showNotification("Product updated successfully", NotificationVariant.LUMO_SUCCESS);
             dialog.close();
@@ -774,7 +791,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         return dialogVerticalLayout;
     }
 
-    private JsonNode editProduct(Binder<Product> binderProduct) {
+    private JsonNode editProduct(Long productId) {
         System.out.println(binderProduct.getBean().toString());
         RestClient client = new RestClient();
         ResponseData date = client.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + binderProduct.getBean().getProductId(), binderProduct.getBean(), ProductForEdit.class);

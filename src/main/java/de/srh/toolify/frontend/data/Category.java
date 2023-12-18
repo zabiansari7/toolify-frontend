@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Category {
 
-	@JsonIgnore
 	private Long categoryId;
 
 	private String categoryName;

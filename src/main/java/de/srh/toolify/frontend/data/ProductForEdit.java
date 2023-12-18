@@ -23,6 +23,9 @@ public class ProductForEdit extends Product {
     private String image;
     private Long categoryTo;
 
+    @JsonIgnore
+    private Category category;
+
     @Override
     public Long getProductId() {
         return productId;
@@ -151,6 +154,16 @@ public class ProductForEdit extends Product {
 
     public void setCategoryTo(Long categoryTo) {
         this.categoryTo = categoryTo;
+    }
+
+    @Override
+    public Category getCategory() {
+        return category;
+    }
+
+    @Override
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     @Override
