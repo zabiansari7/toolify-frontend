@@ -109,17 +109,38 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         userDetailsMain.setMaxWidth("800px");
         userDetailsMain.setHeight("min-content");
         userDetailsFormLayout.setWidth("100%");
-        
         firstname.setLabel("First Name");
+        firstname.setValueChangeMode(ValueChangeMode.EAGER);
         firstname.setRequired(true);
+        firstname.setPattern("^[a-zA-Z]*$");
+        firstname.setMaxLength(30);
+        firstname.setRequiredIndicatorVisible(true);
+        firstname.setClearButtonVisible(true);
+        firstname.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	firstname.setInvalid(!isValid);	
+        });
         
         lastname.setLabel("Last Name");
+        lastname.setValueChangeMode(ValueChangeMode.EAGER);
+        lastname.setMaxLength(30);
+        lastname.setRequiredIndicatorVisible(true);
         lastname.setRequired(true);
+        lastname.setPattern("^[a-zA-Z]*$");
+        lastname.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("^[a-zA-Z]*$"));
+        	lastname.setInvalid(!isValid);
+        });
         
         email.setLabel("Email");
         
         mobile.setLabel("Mobile");
-        mobile.setRequired(true);
+        mobile.setRequiredIndicatorVisible(true);
+        mobile.setMaxLength(15);
+        mobile.setValueChangeMode(ValueChangeMode.EAGER);
+        mobile.setPattern("^\\+\\d{0,15}$");
         mobile.addValueChangeListener(event -> {
             String value = event.getValue();
             boolean isValid = value.matches("^\\+\\d{0,15}$");
@@ -128,25 +149,38 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
             	mobile.setHelperText("");
 			} else {
 				mobile.setHelperText("Mobile number should start with '+' and then only 15 numbers");
-				
 			}
             
         });
+        
         defaultStreetName.setLabel("Street");
+        defaultStreetName.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultStreetName.setRequiredIndicatorVisible(true);
+        defaultStreetName.setPattern("^[a-zA-Z]*$");
         defaultStreetName.setRequired(true);
+        defaultStreetName.setMaxLength(30);
+        defaultStreetName.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	defaultStreetName.setInvalid(!isValid);
+        });
         
         defaultStreetNumber.setLabel("Number");
-        defaultStreetNumber.setRequired(true);
-        defaultStreetNumber.setPattern("\\d{0,3}");
-        defaultStreetNumber.setMaxLength(3);
-        defaultStreetNumber.setWidth("min-content");
+        defaultStreetNumber.setRequiredIndicatorVisible(true);
         defaultStreetNumber.setValueChangeMode(ValueChangeMode.EAGER);
         defaultStreetNumber.addValueChangeListener(event -> {
             String newValue = event.getValue().replaceAll(",", "");
             defaultStreetNumber.setValue(newValue);
+        defaultStreetNumber.setRequired(true);
+        defaultStreetNumber.setPattern("\\d{0,3}");
+        defaultStreetNumber.setMaxLength(3);
+        //defaultStreetNumber.setWidth("min-content");
         });
         
+        
         defaultPincode.setLabel("Pincode");
+        defaultPincode.setRequired(true);
+        defaultPincode.setRequiredIndicatorVisible(true);
         defaultPincode.setValueChangeMode(ValueChangeMode.EAGER);
         defaultPincode.addValueChangeListener(event -> {
             String newValue = event.getValue().replaceAll(",", "");
@@ -155,11 +189,18 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         defaultPincode.setPattern("\\d{0,5}");
         defaultPincode.setWidth("min-content");
         defaultPincode.setMaxLength(5);
-        defaultPincode.setRequired(true);
       
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
-        defaultCity.setRequired(true);
+        defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultCity.setPattern("^[a-zA-Z]*$");
+        defaultCity.setMaxLength(30);
+        defaultCity.setRequiredIndicatorVisible(true);
+        defaultCity.addValueChangeListener(event -> {
+        	String value = event.getValue();
+        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	defaultCity.setInvalid(!isValid);
+        });
         
         userDetailsHorizontalLayout.addClassName(Gap.MEDIUM);
         userDetailsHorizontalLayout.setWidth("100%");
