@@ -77,19 +77,14 @@ public class ProductsView extends Main implements HasComponents, HasStyle{
         sortBy.setItems(sortItems);
         sortBy.setValue("All");
         sortBy.addValueChangeListener(e -> {
-        	RestClient restClient = new RestClient();
-        	String encodedParam = null;
+        	String encodedParam;
         	ResponseData resp;
         	if (sortBy.getValue().equals("All")) {
-        		resp = restClient.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
+        		resp = RestClient.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
         		populateProducts(resp, imageContainer);
 			} else {
-				try {
-					encodedParam = URLEncoder.encode(sortBy.getValue(), StandardCharsets.UTF_8.toString());
-				} catch (UnsupportedEncodingException ex) {
-					ex.printStackTrace();
-				}
-				resp = restClient.requestHttp("GET", "http://localhost:8080/private/admin/products/product?categoryName=" + encodedParam, null, null);
+                encodedParam = URLEncoder.encode(sortBy.getValue(), StandardCharsets.UTF_8);
+                resp = RestClient.requestHttp("GET", "http://localhost:8080/private/admin/products/product?categoryName=" + encodedParam, null, null);
 				populateProducts(resp, imageContainer);
 			}
         });

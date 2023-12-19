@@ -266,8 +266,7 @@ public class RegisterView extends Composite<VerticalLayout> {
 			notification.setPosition(Position.BOTTOM_CENTER);
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 		} else {
-			RestClient client = new RestClient();
-			ResponseData resp = client.requestHttp("POST", "http://localhost:8080/public/users/user", binder.getBean(), User.class);
+			ResponseData resp = RestClient.requestHttp("POST", "http://localhost:8080/public/users/user", binder.getBean(), User.class);
 			int responseCode = 0;
 			try {
 				responseCode = resp.getConnection().getResponseCode();

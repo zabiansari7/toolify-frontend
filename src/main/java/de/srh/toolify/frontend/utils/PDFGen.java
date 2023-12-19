@@ -1,16 +1,19 @@
 package de.srh.toolify.frontend.utils;
 
+
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.xmp.XMPException;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.server.StreamResource;
 import de.srh.toolify.frontend.data.PuchaseHistoryItem;
 import de.srh.toolify.frontend.data.PurchaseHistory;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 
@@ -30,7 +33,7 @@ public class PDFGen {
         PurchaseHistory purchaseHistory = HelperUtil.getPurchaseByInvoice(40716);
 
         // Generate PDF for the PurchaseHistory
-        app.createPdf(purchaseHistory, "results/invoice.pdf");
+        app.createPdf(purchaseHistory);
     }
 
 
@@ -45,13 +48,23 @@ public class PDFGen {
         font14b = new Font(bfb, 14);
     }
 
-    public void createPdf(PurchaseHistory purchaseHistory, String destinationPath) throws IOException, DocumentException, XMPException {
+    public Anchor createPdf(PurchaseHistory purchaseHistory) throws IOException, DocumentException, XMPException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(destinationPath));
+        PdfWriter.getInstance(document, baos);
         document.open();
         // Add content to the PDF based on PurchaseHistory
         addContent(document, purchaseHistory);
         document.close();
+
+        String pdfFileName = "invoice_"+ purchaseHistory.getInvoice() + ".pdf";
+        StreamResource resource = new StreamResource(pdfFileName, () -> new ByteArrayInputStream(baos.toByteArray()));
+
+        Anchor anchor = new Anchor(resource, "");
+        //anchor.getElement().setAttribute("download", true);
+        anchor.setTarget("_blank");
+        return anchor;
+
     }
 
     private void addContent(Document document, PurchaseHistory purchaseHistory) throws DocumentException, IOException {
@@ -78,22 +91,6 @@ public class PDFGen {
         document.add(new Paragraph("69123 - Heidelberg", font10));
         document.add(new Paragraph(" "));
 
-        // Move Invoice ID to the right at the same height position
- /*       PdfPTable headerTable = new PdfPTable(2);
-        headerTable.setWidthPercentage(100);
-        PdfPCell invoiceIdCell = getCell("Invoice No: " + purchaseHistory.getInvoice(), Element.ALIGN_RIGHT, font14b);
-        PdfPCell emptyCell = new PdfPCell();
-        emptyCell.setBorder(Rectangle.NO_BORDER);*/
-
-        //headerTable.addCell(logoCell);
-        //headerTable.addCell(emptyCell);
-        //headerTable.addCell(invoiceIdCell);
-
-        // Add Invoice ID to the document
-        //document.add(headerTable);
-        // Add content to the PDF based on PurchaseHistory
-        // You need to adjust this based on your actual structure
-
         document.add(new Paragraph(" "));
         document.add(new Paragraph(purchaseHistory.getUser().getFullName(), font12b));
         //document.add(new Paragraph("Address:", font10));
@@ -101,7 +98,7 @@ public class PDFGen {
         document.add(new Paragraph(purchaseHistory.getAddress().getAddressLineTwo(), font10));
         document.add(new Paragraph(" "));
         document.add(new Paragraph("Date: " + purchaseHistory.getDate().toString().replace("T", " Time: ").replace("Z", ""), font10));
-
+        document.add(new Paragraph(" "));
 
 
         // Line items

@@ -33,9 +33,7 @@ public class HelloToolifyView extends Composite<VerticalLayout> {
     ProductsView productsView;
     
     public HelloToolifyView() {
-    	
-    	RestClient client = new RestClient();
-    	ResponseData resp = client.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
+    	ResponseData resp = RestClient.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
     	JsonNode products = resp.getNode();
     	
     	getContent().setWidth("100%");

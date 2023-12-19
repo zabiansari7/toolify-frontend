@@ -12,6 +12,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
@@ -279,16 +280,11 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     			showNotification("Empty fields detected !", NotificationVariant.LUMO_ERROR);
     			return;
     		}        	
-        	String encodedEmail = null;
-            try {
-    			encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8.toString());
-    		} catch (UnsupportedEncodingException ex) {
-    			ex.printStackTrace();
-    		}
-            
-        	EditUser editUser = prepareEditUser();
-        	RestClient client = new RestClient();
-        	client.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
+        	String encodedEmail;
+            encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
+
+            EditUser editUser = prepareEditUser();
+        	RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
         	System.out.println("CHECK :: " + binder.getBean().getEmail());
         	adminDetailsHorizontalLayout.removeAll();
         	adminDetailsHorizontalLayout.add(adminDetailsEditButton);
@@ -322,20 +318,11 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 }
 	
 	private User getUserByEmail() {
-    	RestClient client = new RestClient();
-    	String encodedEmail = null;
-        try {
-			encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8.toString());
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-        ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
+    	String encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
+        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.convertValue(data.getNode(), User.class);		
 	}
-
-
-
 
 	private VerticalLayout getAdminOrdersLayout() {    	
 		VerticalLayout main = new VerticalLayout();
@@ -361,7 +348,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 					createLabel(purchaseHistory.getUser().getEmail()),
 					createLabel(String.valueOf(purchaseHistory.getDate()).replace("T", " Time:").replace("Z", " ")),
 					createLabel(String.valueOf(purchaseHistory.getInvoice())),
-					createButton(purchaseHistory.getInvoice()));
+					createButton(purchaseHistory.getInvoice(), main));
 			main.add(itemHorizontalLayout);
 		}
 		
@@ -416,20 +403,24 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		return label;
 	}
 	
-	private Button createButton(int invoiceNo) {
+	private Button createButton(int invoiceNo, VerticalLayout main) {
 		Button button = new Button("Downlaod PDF");
 		button.getElement().setProperty("invoiceNo", invoiceNo);
 		button.setWidth("20%");
 		button.addClassName("clickable-button");
         button.addClickListener(event -> {
             PurchaseHistory purchaseHistory = HelperUtil.getPurchaseByInvoice(invoiceNo);
+            Anchor pdf;
             try {
                 PDFGen app = new PDFGen();
-                app.createPdf(purchaseHistory, "results/invoice_" + invoiceNo + ".pdf");
+                pdf = app.createPdf(purchaseHistory);
             } catch (DocumentException | IOException | XMPException e) {
                 throw new RuntimeException(e);
             }
             showNotification(String.format("PDF for invoice number '%d' generated successfully", invoiceNo), NotificationVariant.LUMO_SUCCESS);
+            getElement().executeJs("window.open($0.href, '_blank')", pdf.getElement());
+            main.add(pdf);
+
         });
 		return button;
 	}
@@ -555,8 +546,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     private void addCategory(String name){
         Category category = new Category();
         category.setCategoryName(name);
-        RestClient client = new RestClient();
-        client.requestHttp("POST", "http://localhost:8080/private/admin/categories/category", category, Category.class);
+        RestClient.requestHttp("POST", "http://localhost:8080/private/admin/categories/category", category, Category.class);
     }
 
     private Button createEditCategoryButton(VerticalLayout main, Category category){
@@ -635,8 +625,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     private void editCategory(Long categoryId, String categoryName){
         CategoryForEdit category = new CategoryForEdit();
         category.setCategoryName(categoryName);
-        RestClient client = new RestClient();
-        client.requestHttp("PUT", "http://localhost:8080/private/admin/categories/category/" + categoryId, category, CategoryForEdit.class);
+        RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/categories/category/" + categoryId, category, CategoryForEdit.class);
     }
 
 
@@ -660,9 +649,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     }*/
 
     private void deleteProductById(Long productId) {
-        RestClient client = new RestClient();
-        client.requestHttp("DELETE", "http://localhost:8080/private/admin/products/product/" + productId, null, null);
-
+        RestClient.requestHttp("DELETE", "http://localhost:8080/private/admin/products/product/" + productId, null, null);
     }
 
     private VerticalLayout getManageProductsLayout(Binder<Product> binderProduct) {
@@ -698,8 +685,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 	}
 	
 	private JsonNode getPurchaseHistoryAll() {
-		RestClient client = new RestClient();
-		ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/admin/purchases/history/all", null, null);
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/admin/purchases/history/all", null, null);
 		JsonNode purchaseHistoryNode = data.getNode();
 		return purchaseHistoryNode;
 	}
@@ -881,16 +867,13 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 	private  JsonNode addProduct(Binder<Product> productBinder) {
 		
 		Product product = productBinder.getBean();
-		
-		RestClient client = new RestClient();
-		ResponseData data = client.requestHttp("POST","http://localhost:8080/private/admin/products/product", product, Product.class);
+		ResponseData data = RestClient.requestHttp("POST","http://localhost:8080/private/admin/products/product", product, Product.class);
 		JsonNode productResponse = data.getNode();
 		return productResponse;
 	}
 	
 	private JsonNode getAllProducts() {
-		RestClient client = new RestClient();
-		ResponseData data = client.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
 		JsonNode productsNode = data.getNode();
 		return productsNode;
 	}
@@ -1124,14 +1107,12 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 
     private JsonNode editProduct(Long productId) {
         System.out.println(binderProduct.getBean().toString());
-        RestClient client = new RestClient();
-        ResponseData date = client.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + productId, binderProduct.getBean(), ProductForEdit.class);
+        ResponseData date = RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + productId, binderProduct.getBean(), ProductForEdit.class);
         return date.getNode();
     }
 
     private JsonNode getProductById(Long productId) {
-        RestClient client = new RestClient();
-        ResponseData data = client.requestHttp("GET", "http://localhost:8080/public/products/product/" + productId, null, null);
+        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/public/products/product/" + productId, null, null);
         JsonNode productNode = data.getNode();
         return productNode;
     }

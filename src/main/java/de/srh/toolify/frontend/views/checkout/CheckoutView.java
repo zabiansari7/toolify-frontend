@@ -166,16 +166,11 @@ public class CheckoutView extends Composite<VerticalLayout> {
         defaultStreetNumber.setReadOnly(true);
         defaultPincode.setReadOnly(true);
         defaultCity.setReadOnly(true);
-        
-        RestClient client = new RestClient();
+
         String email = HelperUtil.getEmailFromSession();
         String encodedEmail = null;
-        try {
-			encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-        ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
+        encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
+        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
         ObjectMapper mapper = new ObjectMapper();
         User user = mapper.convertValue(data.getNode(), User.class);
         
@@ -186,7 +181,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
         defaultPincode.setValue(String.valueOf(user.getDefaultPincode()));
         defaultCity.setValue(user.getDefaultCity());
         
-        JsonNode addressesNode = getAddresses(client, encodedEmail);
+        JsonNode addressesNode = getAddresses(encodedEmail);
         System.out.println(addressesNode);
         
         ObjectMapper addressObjectMapper = new ObjectMapper();
@@ -274,7 +269,7 @@ public class CheckoutView extends Composite<VerticalLayout> {
 			}
             
             purchaseRequest.setPurchaseItems(checkoutPurchaseItems);
-        	ResponseData responseData = client.requestHttp("POST", "http://localhost:8080/private/purchase/product", purchaseRequest, CheckoutRequest.class);
+        	ResponseData responseData = RestClient.requestHttp("POST", "http://localhost:8080/private/purchase/product", purchaseRequest, CheckoutRequest.class);
         	JsonNode responseNode = responseData.getNode();
         	int code = 0;
         	try {
@@ -289,8 +284,8 @@ public class CheckoutView extends Composite<VerticalLayout> {
         });
     }
     
-    private JsonNode getAddresses(RestClient client, String email) {
-		ResponseData data = client.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + email, null, null);
+    private JsonNode getAddresses(String email) {
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + email, null, null);
 		return data.getNode();
     }
     

@@ -104,8 +104,8 @@ public class LoginView extends Composite<VerticalLayout> {
 			return;
 		}
 		//authenticate(user.getEmail(), user.getPassword());
-    	RestClient client = new RestClient();
-    	ResponseData resp = client.requestHttp("POST", "http://localhost:8080/public/login/user", new LoginRequest(user.getEmail(), user.getPassword()), LoginRequest.class);
+
+    	ResponseData resp = RestClient.requestHttp("POST", "http://localhost:8080/public/login/user", new LoginRequest(user.getEmail(), user.getPassword()), LoginRequest.class);
     	
     	// Check the response and handle accordingly
         try {
