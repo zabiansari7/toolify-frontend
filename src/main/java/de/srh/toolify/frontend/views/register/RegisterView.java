@@ -252,12 +252,14 @@ public class RegisterView extends Composite<VerticalLayout> {
             HelperUtil.showNotification("Password and Repeat Password Mismatched !!!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
             return;
 		}
+
         ResponseData resp = RestClient.requestHttp("POST", "http://localhost:8080/public/users/user", binder.getBean(), User.class);
-        int responseCode = 0;
+        int responseCode;
         try {
             responseCode = resp.getConnection().getResponseCode();
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
         if (responseCode == 201) {
             HelperUtil.showNotification("Registration successfully", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
@@ -273,8 +275,6 @@ public class RegisterView extends Composite<VerticalLayout> {
 	}
     
 	private boolean isPasswordMatched(String password1, String password2) {
-        System.out.println("Password1 :: " + password1);
-        System.out.println("Password2 :: " + password2);
 		return password1.equals(password2);
 	}
     
