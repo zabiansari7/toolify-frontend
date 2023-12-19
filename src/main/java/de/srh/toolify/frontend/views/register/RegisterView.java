@@ -204,9 +204,11 @@ public class RegisterView extends Composite<VerticalLayout> {
         registerButton.setText("Register");
         registerButton.addClickListener(c -> onRegister(binder));
         registerButton.setWidth("min-content");
+        registerButton.addClassName("clickable-button");
         registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         alreadyMemberButton.setText("Already a member? Log In here");
         alreadyMemberButton.setWidth("min-content");
+        alreadyMemberButton.addClassName("clickable-button");
         alreadyMemberButton.addClickListener(c -> UI.getCurrent().navigate("/login"));
         getContent().add(layoutColumn2);
         layoutColumn2.add(h3);

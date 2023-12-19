@@ -64,4 +64,13 @@ public class HelperUtil {
 		return categories;
 	}
 
+	public static PurchaseHistory getPurchaseByInvoice(int invoice) {
+		RestClient client = new RestClient();
+		ObjectMapper mapper = HelperUtil.getObjectMapper();
+		ResponseData data =client.requestHttp("GET", "http://localhost:8080/private/purchase/history/" + invoice, null, null);
+		JsonNode purchaseNode = data.getNode();
+		PurchaseHistory purchaseHistory = mapper.convertValue(purchaseNode, PurchaseHistory.class);
+		return purchaseHistory;
+	}
+
 }

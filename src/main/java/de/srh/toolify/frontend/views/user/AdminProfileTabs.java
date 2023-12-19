@@ -3,6 +3,8 @@ package de.srh.toolify.frontend.views.user;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helger.commons.collection.ArrayHelper;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.xmp.XMPException;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -35,8 +37,10 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import de.srh.toolify.frontend.client.RestClient;
 import de.srh.toolify.frontend.data.*;
 import de.srh.toolify.frontend.utils.HelperUtil;
+import de.srh.toolify.frontend.utils.PDFGen;
 import de.srh.toolify.frontend.views.MainLayout;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -347,9 +351,15 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		for (PurchaseHistory purchaseHistory : purchaseHistories) {
 			count++;
 			HorizontalLayout itemHorizontalLayout = createHorizontalLayout();
+            itemHorizontalLayout.setHeight("47px");
+            if (count%2 != 0) {
+                itemHorizontalLayout.getStyle().set("background-color","lightcyan");
+            } else {
+                itemHorizontalLayout.getStyle().set("background-color","whitesmoke");
+            }
 			itemHorizontalLayout.add(createLabel(String.valueOf(count)),
 					createLabel(purchaseHistory.getUser().getEmail()),
-					createLabel(String.valueOf(purchaseHistory.getDate())),
+					createLabel(String.valueOf(purchaseHistory.getDate()).replace("T", " Time:").replace("Z", " ")),
 					createLabel(String.valueOf(purchaseHistory.getInvoice())),
 					createButton(purchaseHistory.getInvoice()));
 			main.add(itemHorizontalLayout);
@@ -402,7 +412,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		H4 label = new H4(text);
 		label.setWidth("20%");
 		label.setWidthFull();
-		addClassName(Padding.Left.MEDIUM);
+        label.addClassName(Padding.MEDIUM);
 		return label;
 	}
 	
@@ -411,6 +421,15 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		button.getElement().setProperty("invoiceNo", invoiceNo);
 		button.setWidth("20%");
 		button.addClassName("clickable-button");
+        button.addClickListener(event -> {
+            PurchaseHistory purchaseHistory = HelperUtil.getPurchaseByInvoice(invoiceNo);
+            try {
+                PDFGen app = new PDFGen();
+                app.createPdf(purchaseHistory, "results/invoice_" + invoiceNo + ".pdf");
+            } catch (DocumentException | IOException | XMPException e) {
+                throw new RuntimeException(e);
+            }
+        });
 		return button;
 	}
 	
@@ -422,6 +441,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 	
 	private HorizontalLayout createEditDeleteLayout(Binder<Product> binderProduct, VerticalLayout mainLayout,Long productId) {
 		HorizontalLayout h = createHorizontalLayout();
+        h.setWidth("115%");
 		h.add(createEditButton(binderProduct, mainLayout, productId), createDeleteButton(mainLayout, productId));
 		return h;
 	}
@@ -658,14 +678,20 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     		count++;
     		Product product = mapper.convertValue(productNode, Product.class);
 			
-			HorizontalLayout addressHorizontalLayout = createHorizontalLayout();
-			addressHorizontalLayout.add(
+			HorizontalLayout productHorizontalLayout = createHorizontalLayout();
+            productHorizontalLayout.setHeight("47px");
+            if (count%2 != 0) {
+                productHorizontalLayout.getStyle().set("background-color","lightcyan");
+            } else {
+                productHorizontalLayout.getStyle().set("background-color","whitesmoke");
+            }
+			productHorizontalLayout.add(
 					createLabel(String.valueOf(count)), 
 					createLabel(product.getName()), 
 					createLabel(String.valueOf(product.getQuantity())), 
 					createLabel("€" + String.valueOf(product.getPrice())),
 					createEditDeleteLayout(binderProduct, main, product.getProductId()));
-					main.add(addressHorizontalLayout);
+					main.add(productHorizontalLayout);
     	}
         return main;
 	}
@@ -890,6 +916,12 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         for (Category category : categories) {
             count++;
             HorizontalLayout hz = createHorizontalLayout();
+            hz.setHeight("47px");
+            if (count%2 != 0) {
+                hz.getStyle().set("background-color","lightcyan");
+            } else {
+                hz.getStyle().set("background-color","whitesmoke");
+            }
             hz.add(createLabel(String.valueOf(count)), createLabel(category.getCategoryName()), createEditCategoryButton(main, category));
             main.add(hz);
         }
