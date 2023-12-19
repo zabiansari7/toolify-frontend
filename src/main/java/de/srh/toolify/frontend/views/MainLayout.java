@@ -79,7 +79,6 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         image.setAlt("logo");
         image.addClickListener(e -> {
             UI.getCurrent().navigate(HelloToolifyView.class);
-            div.getElement().executeJs("location.reload(true)");
         });
         div.addClassName(Margin.MEDIUM);
         div.add(image);

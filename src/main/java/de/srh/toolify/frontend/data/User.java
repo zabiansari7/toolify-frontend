@@ -140,6 +140,10 @@ public class User {
 		this.updatedOn = updatedOn;
 	}
 
+	public String getFullName(){
+		return this.getFirstname() + " " + this.getLastname();
+	}
+
 	@Override
 	public String toString() {
 		return "User [firstname=" + firstname + ", lastname=" + lastname + ", email=" + email + ", mobile=" + mobile

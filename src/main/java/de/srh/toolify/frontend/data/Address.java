@@ -90,5 +90,13 @@ public class Address {
 
 	public void setUpdatedOn(Instant updatedOn) {
 		this.updatedOn = updatedOn;
-	} 
+	}
+
+	public String getAddressLineOne(){
+		return this.getStreetName() + "-" + this.getStreetNumber();
+	}
+
+	public String getAddressLineTwo(){
+		return this.getPostCode() + " - " + this.getCityName();
+	}
 }

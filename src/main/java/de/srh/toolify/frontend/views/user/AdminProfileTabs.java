@@ -429,6 +429,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
             } catch (DocumentException | IOException | XMPException e) {
                 throw new RuntimeException(e);
             }
+            showNotification(String.format("PDF for invoice number '%d' generated successfully", invoiceNo), NotificationVariant.LUMO_SUCCESS);
         });
 		return button;
 	}
