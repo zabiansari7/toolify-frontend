@@ -29,6 +29,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import de.srh.toolify.frontend.client.RestClient;
 import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.data.User;
+import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
 
 @PageTitle("Register")
@@ -238,65 +239,42 @@ public class RegisterView extends Composite<VerticalLayout> {
 	    return value.matches(passwordRegex);
 	}
 
-	private void onRegister(
-			Binder<User> binder) {
+	private void onRegister(Binder<User> binder) {
 		if (binder.getFields().anyMatch(a -> a.isEmpty())) {
-			Notification notification = Notification
-					.show("Empty fields detected!!");
-			notification.setDuration(5000);
-			notification.setPosition(Position.BOTTOM_CENTER);
-			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			return;
-		}
-		
-		
-		
+            HelperUtil.showNotification("Empty fields detected!!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+            return;
+        }
 		if (!isValidPassword(binder.getBean().getPassword())) {
-	        Notification notification = Notification
-	                .show("Invalid password format. Please follow the password requirements.");
-	        notification.setDuration(5000);
-	        notification.setPosition(Position.BOTTOM_CENTER);
-	        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            HelperUtil.showNotification("Invalid password format. Please follow the password requirements", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
 	        return;
 	    }
 		if (!this.isPasswordMatched(binder.getBean().getPassword(), binder.getBean().getRepeatPassword())) {
-			Notification notification = Notification
-			        .show("Password Mismatched !!!");
-			notification.setDuration(5000);
-			notification.setPosition(Position.BOTTOM_CENTER);
-			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-		} else {
-			ResponseData resp = RestClient.requestHttp("POST", "http://localhost:8080/public/users/user", binder.getBean(), User.class);
-			int responseCode = 0;
-			try {
-				responseCode = resp.getConnection().getResponseCode();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-            if (responseCode == 201) {
-            	Notification notification = Notification.show("Registration successfully");
-            	notification.setDuration(5000);
-    			notification.setPosition(Position.BOTTOM_CENTER);
-    			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-    			getUI().get().navigate("/login");
-    			
-            } else {
-            	String errMessage = resp.getNode().get("message").textValue();
-            	if (errMessage.contains("Duplicate entry")) {
-            		errMessage = "Email already exist. Try with another email address";
-				}
-            	Notification notification = Notification.show(errMessage);
-            	notification.setDuration(5000);
-    			notification.setPosition(Position.BOTTOM_CENTER);
-    			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
+            HelperUtil.showNotification("Password and Repeat Password Mismatched !!!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+            return;
 		}
+        ResponseData resp = RestClient.requestHttp("POST", "http://localhost:8080/public/users/user", binder.getBean(), User.class);
+        int responseCode = 0;
+        try {
+            responseCode = resp.getConnection().getResponseCode();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (responseCode == 201) {
+            HelperUtil.showNotification("Registration successfully", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
+            UI.getCurrent().navigate("/login");
+
+        } else {
+            String errMessage = resp.getNode().get("message").textValue();
+            if (errMessage.contains("Duplicate entry")) {
+                errMessage = "Email already exist. Try with another email address";
+            }
+            HelperUtil.showNotification(errMessage, NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+        }
 	}
-	
-	
-	
     
 	private boolean isPasswordMatched(String password1, String password2) {
+        System.out.println("Password1 :: " + password1);
+        System.out.println("Password2 :: " + password2);
 		return password1.equals(password2);
 	}
     

@@ -140,6 +140,7 @@ public class User {
 		this.updatedOn = updatedOn;
 	}
 
+	@JsonIgnore
 	public String getFullName(){
 		return this.getFirstname() + " " + this.getLastname();
 	}

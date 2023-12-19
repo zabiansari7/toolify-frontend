@@ -92,10 +92,11 @@ public class Address {
 		this.updatedOn = updatedOn;
 	}
 
+	@JsonIgnore
 	public String getAddressLineOne(){
 		return this.getStreetName() + "-" + this.getStreetNumber();
 	}
-
+	@JsonIgnore
 	public String getAddressLineTwo(){
 		return this.getPostCode() + " - " + this.getCityName();
 	}
