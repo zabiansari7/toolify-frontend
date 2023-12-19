@@ -10,7 +10,7 @@ public class Product {
     private String name;
     private String description;
     private BigDecimal price;
-    private Integer quantity;
+    private String quantity;
     private String manufacturer;
     private String voltage;
     private String productDimensions;
@@ -61,11 +61,11 @@ public class Product {
 		this.price = price;
 	}
 	
-	public Integer getQuantity() {
+	public String getQuantity() {
 		return quantity;
 	}
 	
-	public void setQuantity(Integer quantity) {
+	public void setQuantity(String quantity) {
 		this.quantity = quantity;
 	}
 	

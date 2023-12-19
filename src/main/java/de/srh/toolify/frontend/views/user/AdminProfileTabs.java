@@ -49,6 +49,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 
     Binder<User> binder = new Binder<>(User.class);
     Binder<Product> binderProduct = new Binder<>(Product.class);
+    Binder<ProductForEdit> binderEditProduct = new Binder<>(ProductForEdit.class);
 	VerticalLayout adminDetailsMain = new VerticalLayout();
     FormLayout adminDetailsFormLayout = new FormLayout();
     TextField firstname = new TextField();
@@ -654,6 +655,11 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 
         VerticalLayout dialogVerticalLayout = new VerticalLayout();
 
+        binderEditProduct.forField(name).bind(ProductForEdit::getName, ProductForEdit::setName);
+        binderEditProduct.forField(description).bind(ProductForEdit::getDescription, ProductForEdit::setDescription);
+        binderEditProduct.forField(quantity).bind(ProductForEdit::getQuantity, ProductForEdit::setQuantity);
+        binderEditProduct.forField(image).bind(ProductForEdit::getImage, ProductForEdit::setImage);
+
         dialogVerticalLayout.setWidth("100%");
         dialogVerticalLayout.getStyle().set("flex-grow", "1");
         layoutRowDialog.setWidthFull();
@@ -664,10 +670,21 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRowDialog.setAlignItems(Alignment.CENTER);
         layoutRowDialog.setJustifyContentMode(JustifyContentMode.CENTER);
         name.setLabel("Name");
+        name.setValueChangeMode(ValueChangeMode.EAGER);
+        name.setRequiredIndicatorVisible(true);
+        name.setRequired(true);
         //name.setWidth("180px");
         description.setLabel("Description");
+        description.setValueChangeMode(ValueChangeMode.EAGER);
+        description.setRequiredIndicatorVisible(true);
+        description.setRequired(true);
         //description.setWidth("180px");
         price.setLabel("Price");
+        price.setValueChangeMode(ValueChangeMode.EAGER);
+        price.setRequiredIndicatorVisible(true);
+        price.setPattern("\\d+(\\.\\d{2})?");
+        price.setMaxLength(8);
+        price.setRequired(true);
         //price.setWidth("180px");
         layoutRow2.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
@@ -677,6 +694,11 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow2.setAlignItems(Alignment.CENTER);
         layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
         quantity.setLabel("Quantity");
+        quantity.setPattern("\\d{0,3}");
+        quantity.setValueChangeMode(ValueChangeMode.EAGER);
+        quantity.setRequiredIndicatorVisible(true);
+        quantity.setMaxLength(3);
+        quantity.setRequired(true);
         //quantity.setWidth("180px");
         voltage.setLabel("Voltage");
         layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, voltage);
@@ -717,9 +739,13 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow5.setAlignItems(Alignment.CENTER);
         layoutRow5.setJustifyContentMode(JustifyContentMode.CENTER);
         image.setLabel("Image URL");
+        image.setValueChangeMode(ValueChangeMode.EAGER);
+        image.setRequiredIndicatorVisible(true);
+        image.setRequired(true);
         //image.setWidth("180px");
         category = new Select<>();
         category.setLabel("Category");
+        category.setRequiredIndicatorVisible(true);
         //category.setPlaceholder(product.getCategory().getCategoryName());
         category.setValue(product.getCategory());
         category.setPlaceholder(productNode.get("category").get("categoryName").textValue());
@@ -774,6 +800,22 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         category.setItemLabelGenerator(Category::getCategoryName);
         product.setProductId(productId);
         saveButton.addClickListener(e -> {
+            if (price.getValue().isEmpty() || price.getValue().isBlank()) {
+                showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+            if (!price.getValue().matches("\\d+(\\.\\d{2})?")) {
+                showNotification("Invalid Price Input !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+            if (binderEditProduct.validate().isOk() == false) {
+                showNotification("Invalid Input !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+            if (binderEditProduct.getFields().anyMatch(field -> field.isEmpty())) {
+                showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
             if (this.getCategorySelectValue() == null) {
                 product.setCategoryTo(productNode.get("category").get("categoryId").asLong());
             } else {
