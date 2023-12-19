@@ -2,6 +2,9 @@ package de.srh.toolify.frontend.views.login;
 
 import java.io.IOException;
 
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import de.srh.toolify.frontend.error.AlreadyLoggedInView;
 import org.springframework.http.HttpHeaders;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,7 +40,7 @@ import de.srh.toolify.frontend.views.MainLayout;
 @PageTitle("Login")
 @Route(value = "login", layout = MainLayout.class)
 @Uses(Icon.class)
-public class LoginView extends Composite<VerticalLayout> {
+public class LoginView extends Composite<VerticalLayout> implements BeforeEnterObserver {
 	private static final long serialVersionUID = -1949527920549114653L;
 	private Binder<User> binder = new Binder<>(User.class);
 	VerticalLayout layoutColumn2 = new VerticalLayout();
@@ -143,4 +146,11 @@ public class LoginView extends Composite<VerticalLayout> {
 		}
     }
 
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        /*if (VaadinSession.getCurrent().getAttribute("token") != null || VaadinSession.getCurrent().getAttribute("token") != ""){
+            event.rerouteTo(AlreadyLoggedInView.class);
+            return;
+        }*/
+    }
 }

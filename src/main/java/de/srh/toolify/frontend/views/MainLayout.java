@@ -2,6 +2,7 @@ package de.srh.toolify.frontend.views;
 
 
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -125,7 +126,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         logoutButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         logoutButton.addClickListener(e -> {
         	VaadinSession.getCurrent().setAttribute("token", "");        	
-        	VaadinSession.getCurrent().setAttribute("cartItems", null);
+        	VaadinSession.getCurrent().setAttribute("cartItems", new ArrayList<>());
         	VaadinSession.getCurrent().setAttribute("user", null);
 			layoutRow.remove(cartButton, profileButton, logoutButton);
 			layoutRow.add(loginButton, registerButton);

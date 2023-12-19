@@ -41,9 +41,10 @@ import de.srh.toolify.frontend.data.PurchaseItem;
 import de.srh.toolify.frontend.data.CheckoutRequest;
 import de.srh.toolify.frontend.data.ResponseData;
 import de.srh.toolify.frontend.data.User;
+import de.srh.toolify.frontend.error.InternalErrorView;
 import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
-import de.srh.toolify.frontend.error.ErrorView;
+import de.srh.toolify.frontend.error.AlreadyLoggedInView;
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Checkout")
@@ -351,7 +352,7 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         if (Objects.equals(h3.getText(), "Total Price €0")) {
-            event.rerouteTo(ErrorView.class);
+            event.rerouteTo(InternalErrorView.class);
         }
     }
 }

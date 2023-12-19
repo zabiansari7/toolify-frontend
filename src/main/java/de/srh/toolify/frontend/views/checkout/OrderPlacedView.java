@@ -22,8 +22,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 
-import de.srh.toolify.frontend.utils.AuthenticationManagerUtil;
-import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
 import de.srh.toolify.frontend.views.login.LoginView;
 import jakarta.annotation.security.PermitAll;
@@ -73,10 +71,11 @@ public class OrderPlacedView extends Composite<VerticalLayout> implements Before
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        if (AuthenticationManagerUtil.isAuthenticated(event) == false) {
+/*        if (AuthenticationManagerUtil.isAuthenticated(event) == false) {
             event.forwardTo(LoginView.class);
             return;
         }
         VaadinSession.getCurrent().setAttribute("cartItems", new ArrayList<>());
+    }*/
     }
 }
