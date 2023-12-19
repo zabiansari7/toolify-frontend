@@ -55,7 +55,7 @@ public class HelperUtil {
 	public static List<Category> getAllCategoriesAsClass() {
 		RestClient client = new RestClient();
 		ResponseData resp = client.requestHttp("GET", "http://localhost:8080/private/admin/categories/all", null, null);
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = HelperUtil.getObjectMapper();
 		List<Category> categories = new ArrayList<>();
 		for (JsonNode categoryNode : resp.getNode()) {
 			Category category = mapper.convertValue(categoryNode, Category.class);

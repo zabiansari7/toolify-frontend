@@ -2,6 +2,7 @@ package de.srh.toolify.frontend.views.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.helger.commons.collection.ArrayHelper;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -362,6 +363,12 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		return h;
 	}
 
+    private HorizontalLayout headerManageCategoryLayout(VerticalLayout main) {
+        HorizontalLayout h = createHorizontalLayout();
+        h.add(createHeader("SrNo."), createHeader("Category"), createAddCategoryButton(main));
+        return h;
+    }
+
 	private HorizontalLayout headerManageProductsLayout(VerticalLayout mainLayout) {
 		HorizontalLayout h = createHorizontalLayout();
 		h.add(createHeader("SrNo."), createHeader("Product Name"),createHeader("Quantity"), createHeader("Price"), createAddProductButton(mainLayout));
@@ -441,11 +448,194 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		button.addThemeVariants(ButtonVariant.LUMO_ERROR);
         button.addClickListener(e -> {
             deleteProductById(productId);
-            main.removeAll();
-            main.getElement().executeJs("location.reload(true)");
+            button.getElement().getParent().getParent().removeFromParent();
+            showNotification("Product Deleted successfully", NotificationVariant.LUMO_ERROR);
         });
 		return button;
 	}
+
+    private Button createAddCategoryButton(VerticalLayout mainLayout){
+        Button button = new Button("Add Category");
+        button.setWidth("20%");
+        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        button.addClassName("clickable-button");
+        button.addClickListener(event -> {
+            Dialog dialog = new Dialog();
+            dialog.getElement().setAttribute("aria-label", "Create new product");
+            mainLayout.add(dialog);
+            dialog.add(createAddCategoryDialog(dialog, mainLayout));
+            dialog.open();
+
+        });
+        return button;
+    }
+
+    private VerticalLayout createAddCategoryDialog(Dialog dialog, VerticalLayout mainLayout) {
+        VerticalLayout dialogVerticalLayout = new VerticalLayout();
+
+        dialogVerticalLayout.setWidth("100%");
+        dialogVerticalLayout.getStyle().set("flex-grow", "1");
+
+        HorizontalLayout layoutRow = new HorizontalLayout();
+        TextField categoryName = new TextField();
+        categoryName.setLabel("Category");
+        categoryName.setMaxLength(30);
+        categoryName.setRequired(true);
+        categoryName.setRequiredIndicatorVisible(true);
+
+        HorizontalLayout layoutRow2 = new HorizontalLayout();
+        Button saveButton = new Button();
+        saveButton.setText("Save");
+        saveButton.setWidth("min-content");
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        Button cancelButton = new Button();
+        cancelButton.setText("Cancel");
+        cancelButton.setWidth("min-content");
+        layoutRow.add(categoryName);
+        layoutRow2.add(saveButton, cancelButton);
+        dialogVerticalLayout.add(layoutRow, layoutRow2);
+
+        layoutRow.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow);
+        layoutRow.addClassName(Gap.MEDIUM);
+        layoutRow.setHeight("75px");
+        layoutRow.setAlignItems(Alignment.CENTER);
+        layoutRow.setJustifyContentMode(JustifyContentMode.CENTER);
+
+        layoutRow2.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
+        layoutRow2.addClassName(Gap.MEDIUM);
+        layoutRow2.setHeight("75px");
+        layoutRow2.setAlignItems(Alignment.CENTER);
+        layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
+
+        cancelButton.addClickListener(event -> {
+           dialog.close();
+        });
+
+        saveButton.addClickListener(event -> {
+            if (categoryName.getValue().isEmpty() || categoryName.getValue().isBlank()) {
+                showNotification("Empty Field Detected !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+            addCategory(categoryName.getValue());
+            showNotification("Category saved successfully", NotificationVariant.LUMO_SUCCESS);
+            dialog.close();
+            mainLayout.removeAll();
+            mainLayout.getElement().executeJs("location.reload(true)");
+
+        });
+
+        return dialogVerticalLayout;
+
+    }
+
+    private void addCategory(String name){
+        Category category = new Category();
+        category.setCategoryName(name);
+        RestClient client = new RestClient();
+        client.requestHttp("POST", "http://localhost:8080/private/admin/categories/category", category, Category.class);
+    }
+
+    private Button createEditCategoryButton(VerticalLayout main, Category category){
+        Button button = new Button("Edit");
+        button.setWidth("20%");
+        button.addClassName("clickable-button");
+        button.addClickListener(event -> {
+            Dialog dialog = new Dialog();
+            dialog.getElement().setAttribute("aria-label", "Edit Category");
+            main.add(dialog);
+            dialog.add(createEditCategoryDialog(dialog, main, category));
+            dialog.open();
+        });
+        return button;
+    }
+
+    private VerticalLayout createEditCategoryDialog(Dialog dialog, VerticalLayout mainLayout, Category category) {
+        VerticalLayout dialogVerticalLayout = new VerticalLayout();
+
+        dialogVerticalLayout.setWidth("100%");
+        dialogVerticalLayout.getStyle().set("flex-grow", "1");
+
+        HorizontalLayout layoutRow = new HorizontalLayout();
+        TextField categoryName = new TextField();
+        categoryName.setLabel("Category");
+        categoryName.setValue(category.getCategoryName());
+        categoryName.setMaxLength(30);
+        categoryName.setRequired(true);
+        categoryName.setRequiredIndicatorVisible(true);
+
+        HorizontalLayout layoutRow2 = new HorizontalLayout();
+        Button saveButton = new Button();
+        saveButton.setText("Save");
+        saveButton.setWidth("min-content");
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        Button cancelButton = new Button();
+        cancelButton.setText("Cancel");
+        cancelButton.setWidth("min-content");
+        layoutRow.add(categoryName);
+        layoutRow2.add(saveButton, cancelButton);
+        dialogVerticalLayout.add(layoutRow, layoutRow2);
+
+        layoutRow.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow);
+        layoutRow.addClassName(Gap.MEDIUM);
+        layoutRow.setHeight("75px");
+        layoutRow.setAlignItems(Alignment.CENTER);
+        layoutRow.setJustifyContentMode(JustifyContentMode.CENTER);
+
+        layoutRow2.setWidthFull();
+        dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
+        layoutRow2.addClassName(Gap.MEDIUM);
+        layoutRow2.setHeight("75px");
+        layoutRow2.setAlignItems(Alignment.CENTER);
+        layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
+
+        cancelButton.addClickListener(event -> {
+            dialog.close();
+        });
+
+        saveButton.addClickListener(event -> {
+            if (categoryName.getValue().isEmpty() || categoryName.getValue().isBlank()) {
+                showNotification("Empty Field Detected !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+            editCategory(category.getCategoryId(), categoryName.getValue());
+            showNotification("Category updated successfully", NotificationVariant.LUMO_SUCCESS);
+            dialog.close();
+            mainLayout.removeAll();
+            mainLayout.getElement().executeJs("location.reload(true)");
+
+        });
+        return dialogVerticalLayout;
+    }
+
+    private void editCategory(Long categoryId, String categoryName){
+        CategoryForEdit category = new CategoryForEdit();
+        category.setCategoryName(categoryName);
+        RestClient client = new RestClient();
+        client.requestHttp("PUT", "http://localhost:8080/private/admin/categories/category/" + categoryId, category, CategoryForEdit.class);
+    }
+
+
+
+/*    private Button createDeleteCategoryButton(Long categoryId){
+        Button button = new Button("Delete");
+        button.setWidth("10%");
+        button.addClassName("clickable-button");
+        button.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        button.addClickListener(event -> {
+            deleteCategoryById(categoryId);
+            button.getElement().getParent().getParent().removeFromParent();
+            showNotification("Category deleted successfully", NotificationVariant.LUMO_ERROR);
+        });
+        return button;
+    }
+
+    private void deleteCategoryById(Long categoryId) {
+        RestClient client = new RestClient();
+        client.requestHttp("DELETE", "http://localhost:8080/private/admin/categories/category/" + categoryId, null, null);
+    }*/
 
     private void deleteProductById(Long productId) {
         RestClient client = new RestClient();
@@ -571,7 +761,6 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         cancelButton.setText("Cancel");
         cancelButton.setWidth("min-content");
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         cancelButton.addClickListener(e -> {
         	dialog.close();
         });
@@ -642,8 +831,23 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 
     private VerticalLayout getManageCategoryLayout() {
         VerticalLayout main = new VerticalLayout();
+        main.setWidth("50%");
 
-        return new VerticalLayout();
+        HorizontalLayout labelHorizontalLayout = headerManageCategoryLayout(main);
+        labelHorizontalLayout.setWidthFull();
+        main.add(labelHorizontalLayout);
+
+        List<Category> categories = HelperUtil.getAllCategoriesAsClass();
+
+        int count = 0;
+        for (Category category : categories) {
+            count++;
+            HorizontalLayout hz = createHorizontalLayout();
+            hz.add(createLabel(String.valueOf(count)), createLabel(category.getCategoryName()), createEditCategoryButton(main, category));
+            main.add(hz);
+        }
+
+        return main;
     }
 
     private VerticalLayout createEditProductDialog(Binder<Product> binderProduct, Long productId,  Dialog dialog, VerticalLayout main) {
@@ -685,6 +889,10 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         price.setPattern("\\d+(\\.\\d{2})?");
         price.setMaxLength(8);
         price.setRequired(true);
+        price.addValueChangeListener(event -> {
+            String newValue = event.getValue().replaceAll(",", "");
+            price.setValue(newValue);
+        });
         //price.setWidth("180px");
         layoutRow2.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
@@ -743,7 +951,6 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         image.setRequiredIndicatorVisible(true);
         image.setRequired(true);
         //image.setWidth("180px");
-        category = new Select<>();
         category.setLabel("Category");
         category.setRequiredIndicatorVisible(true);
         //category.setPlaceholder(product.getCategory().getCategoryName());
@@ -834,7 +1041,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     private JsonNode editProduct(Long productId) {
         System.out.println(binderProduct.getBean().toString());
         RestClient client = new RestClient();
-        ResponseData date = client.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + binderProduct.getBean().getProductId(), binderProduct.getBean(), ProductForEdit.class);
+        ResponseData date = client.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + productId, binderProduct.getBean(), ProductForEdit.class);
         return date.getNode();
     }
 

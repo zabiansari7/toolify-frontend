@@ -167,12 +167,11 @@ public class RegisterView extends Composite<VerticalLayout> {
         defaultStreetNumber.addValueChangeListener(event -> {
             String newValue = event.getValue().replaceAll(",", "");
             defaultStreetNumber.setValue(newValue);
+        });
         defaultStreetNumber.setRequired(true);
         defaultStreetNumber.setPattern("\\d{0,3}");
         defaultStreetNumber.setMaxLength(3);
         //defaultStreetNumber.setWidth("min-content");
-        });
-        
         
        
         defaultPincode.setLabel("Pincode");
