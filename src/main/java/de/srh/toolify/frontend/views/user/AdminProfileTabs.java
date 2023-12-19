@@ -50,6 +50,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     Binder<User> binder = new Binder<>(User.class);
     Binder<Product> binderProduct = new Binder<>(Product.class);
     Binder<ProductForEdit> binderEditProduct = new Binder<>(ProductForEdit.class);
+    Binder<Product>bindAddProduct = new Binder<>(Product.class);
 	VerticalLayout adminDetailsMain = new VerticalLayout();
     FormLayout adminDetailsFormLayout = new FormLayout();
     TextField firstname = new TextField();
@@ -489,6 +490,12 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 	private VerticalLayout createAddProductDialog(Dialog dialog, VerticalLayout main) {
 		VerticalLayout dialogVerticalLayout = new VerticalLayout();
 		
+		bindAddProduct.forField(name).bind(Product::getName, Product::setName);
+		bindAddProduct.forField(description).bind(Product::getDescription, Product::setDescription);
+		bindAddProduct.forField(quantity).bind(Product::getQuantity, Product::setQuantity);
+		bindAddProduct.forField(image).bind(Product::getImage, Product::setImage);
+
+		
         dialogVerticalLayout.setWidth("100%");
         dialogVerticalLayout.getStyle().set("flex-grow", "1");
         layoutRowDialog.setWidthFull();
@@ -499,10 +506,25 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRowDialog.setAlignItems(Alignment.CENTER);
         layoutRowDialog.setJustifyContentMode(JustifyContentMode.CENTER);
         name.setLabel("Name");
+        name.setValueChangeMode(ValueChangeMode.EAGER);
+        name.setRequiredIndicatorVisible(true);
+        name.setRequired(true);
         //name.setWidth("180px");
         description.setLabel("Description");
+        description.setValueChangeMode(ValueChangeMode.EAGER);
+        description.setRequiredIndicatorVisible(true);
+        description.setRequired(true);
         //description.setWidth("180px");
         price.setLabel("Price");
+        price.setValueChangeMode(ValueChangeMode.EAGER);
+        price.setRequiredIndicatorVisible(true);
+        price.addValueChangeListener(event -> {
+            String newValue = event.getValue().replaceAll(",", "");
+            price.setValue(newValue);
+        });
+        price.setPattern("\\d+(\\.\\d{2})?");
+        price.setMaxLength(8);
+        price.setRequired(true);
         //price.setWidth("180px");
         layoutRow2.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
@@ -512,6 +534,11 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow2.setAlignItems(Alignment.CENTER);
         layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
         quantity.setLabel("Quantity");
+        quantity.setRequiredIndicatorVisible(true);
+        quantity.setValueChangeMode(ValueChangeMode.EAGER);
+        quantity.setRequired(true);
+        quantity.setMaxLength(3);
+        quantity.setPattern("\\d{0,3}");
         //quantity.setWidth("180px");
         voltage.setLabel("Voltage");
         layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, voltage);
@@ -552,9 +579,13 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow5.setAlignItems(Alignment.CENTER);
         layoutRow5.setJustifyContentMode(JustifyContentMode.CENTER);
         image.setLabel("Image URL");
+        image.setValueChangeMode(ValueChangeMode.EAGER);
+        image.setRequiredIndicatorVisible(true);
+        image.setRequired(true);
         //image.setWidth("180px");
         category.setLabel("Category");
         category.setPlaceholder("Select Category");
+        category.setRequiredIndicatorVisible(true);
         List<Category> categories = HelperUtil.getAllCategoriesAsClass();
         category.setItems(categories);
         category.addValueChangeListener(e -> this.setCategorySelectValue(e.getValue()));
@@ -605,6 +636,22 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         binderProduct.setBean(product);
         
         saveButton.addClickListener(e -> {
+        	if (price.getValue().isEmpty() || price.getValue().isBlank()) {
+        		showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
+				return;
+			}
+        	if (!price.getValue().matches("\\d+(\\.\\d{2})?")) {
+        	    showNotification("Invalid Price Input !", NotificationVariant.LUMO_ERROR);
+        	    return;
+        	}
+        	if (bindAddProduct.validate().isOk() == false) {
+				showNotification("Invalid Input !", NotificationVariant.LUMO_ERROR);
+				return;
+			}
+        	if (bindAddProduct.getFields().anyMatch(field -> field.isEmpty())) {
+        		showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
+				return;
+			}
         	addProduct(binderProduct);
         	showNotification("Product saved successfully", NotificationVariant.LUMO_SUCCESS);
         	dialog.close();
@@ -682,6 +729,10 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         price.setLabel("Price");
         price.setValueChangeMode(ValueChangeMode.EAGER);
         price.setRequiredIndicatorVisible(true);
+        price.addValueChangeListener(event -> {
+            String newValue = event.getValue().replaceAll(",", "");
+            price.setValue(newValue);
+        });
         price.setPattern("\\d+(\\.\\d{2})?");
         price.setMaxLength(8);
         price.setRequired(true);
