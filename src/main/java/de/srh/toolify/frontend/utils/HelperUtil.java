@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.VaadinSession;
 
 import de.srh.toolify.frontend.client.RestClient;
@@ -21,6 +23,14 @@ public class HelperUtil {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
 		return mapper;
+	}
+
+	public static void showNotification(String text, NotificationVariant variant, Notification.Position position) {
+		Notification notification = Notification
+				.show(text);
+		notification.setDuration(5000);
+		notification.setPosition(position);
+		notification.addThemeVariants(variant);
 	}
 	
 	public static String getEmailFromSession() {

@@ -2,7 +2,6 @@ package de.srh.toolify.frontend.views.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.helger.commons.collection.ArrayHelper;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.xmp.XMPException;
 import com.vaadin.flow.component.Composite;
@@ -313,9 +312,9 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		Notification notification = Notification
 				.show(text);
 		notification.setDuration(5000);
-		notification.setPosition(Position.BOTTOM_CENTER);
+		notification.setPosition(Position.TOP_CENTER);
 		notification.addThemeVariants(variant);
-}
+    }
 	
 	private User getUserByEmail() {
     	String encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
