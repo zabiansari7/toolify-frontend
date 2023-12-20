@@ -39,7 +39,7 @@ public class RegisterView extends Composite<VerticalLayout> {
 
     private static final long serialVersionUID = 4643655362138031508L;
     
-    private Binder<User> binder = new Binder<>(User.class);
+    private final Binder<User> binder = new Binder<>(User.class);
     VerticalLayout layoutColumn2 = new VerticalLayout();
     H3 h3 = new H3();
     FormLayout formLayout2Col = new FormLayout();
@@ -56,8 +56,6 @@ public class RegisterView extends Composite<VerticalLayout> {
     HorizontalLayout layoutRow = new HorizontalLayout();
     Button registerButton = new Button();
     Button alreadyMemberButton = new Button();
-    
-    private boolean valuesMatches;
 
 	public RegisterView() {
 		binder.bindInstanceFields(this);
@@ -108,7 +106,6 @@ public class RegisterView extends Composite<VerticalLayout> {
         	email.setInvalid(!isValid);
         });
         
-        
         mobile.setLabel("Mobile");
         mobile.setRequiredIndicatorVisible(true);
         mobile.setMaxLength(15);
@@ -123,76 +120,56 @@ public class RegisterView extends Composite<VerticalLayout> {
 			} else {
 				mobile.setHelperText("Mobile number should start with '+' and then only 15 numbers");
 			}
-            
         });
-        
+
         password.setLabel("Password");
-        password.setValueChangeMode(ValueChangeMode.EAGER);
-        password.setWidth("min-content");
         password.setRequiredIndicatorVisible(true);
+        password.setValueChangeMode(ValueChangeMode.EAGER);
         password.setPattern("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$");
         password.addValueChangeListener(event -> {
-        	String value = event.getValue();
-        	boolean isValid = value.matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$");
-        	password.setInvalid(!isValid);
-        	if (isValid) {
-            	password.setHelperText("");
-			} else {
-				password.setHelperText("Password must have at least 8 characters, one capital letter, one special character, and one digit");
-			}
+            String value = event.getValue();
+            boolean isValid = value.matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$");
+            password.setInvalid(!isValid);
+            if (isValid) {
+                password.setHelperText("");
+            } else {
+                password.setHelperText("Password must have at least 8 characters, one capital letter, one special character, and one digit");
+            }
         });
-//        binder.forField(password)
-//        	.withValidator(this::isValidPassword, "Password must have at least 8 characters, one capital letter, one special character, and one digit.")
-//        	.bind(User::getPassword, User::setPassword);
         
         repeatPassword.setLabel("Repeat Password");
+        repeatPassword.setValueChangeMode(ValueChangeMode.EAGER);
         repeatPassword.setWidth("min-content");
         repeatPassword.setRequiredIndicatorVisible(true);
-        repeatPassword.setRequired(true);
-        
+
         defaultStreetName.setLabel("Street");
-        defaultStreetName.setValueChangeMode(ValueChangeMode.EAGER);
         defaultStreetName.setRequiredIndicatorVisible(true);
-        defaultStreetName.setPattern("^[a-zA-Z]*$");
-        defaultStreetName.setRequired(true);
         defaultStreetName.setMaxLength(30);
+        defaultStreetName.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultStreetName.setPattern("^[a-zA-Z]*$");
         defaultStreetName.addValueChangeListener(event -> {
         	String value = event.getValue();
-        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
+        	boolean isValid = value.matches(("^[a-zA-Z]*$"));
         	defaultStreetName.setInvalid(!isValid);
         });
         
         defaultStreetNumber.setLabel("Number");
         defaultStreetNumber.setRequiredIndicatorVisible(true);
-        defaultStreetNumber.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultStreetNumber.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            defaultStreetNumber.setValue(newValue);
-        });
-        defaultStreetNumber.setRequired(true);
-        defaultStreetNumber.setPattern("\\d{0,3}");
         defaultStreetNumber.setMaxLength(3);
-        //defaultStreetNumber.setWidth("min-content");
-        
+        defaultStreetNumber.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultStreetNumber.setPattern("^\\d{0,3}$");
        
         defaultPincode.setLabel("Pincode");
-        defaultPincode.setRequired(true);
         defaultPincode.setRequiredIndicatorVisible(true);
+        defaultPincode.setMaxLength(6);
         defaultPincode.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultPincode.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            defaultPincode.setValue(newValue);
-        });
-        defaultPincode.setPattern("\\d{0,5}");
-        defaultPincode.setWidth("min-content");
-        defaultPincode.setMaxLength(5);
-        
+        defaultPincode.setPattern("^\\d{0,6}$");
+
         defaultCity.setLabel("City");
-        defaultCity.setWidth("min-content");
-        defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultCity.setPattern("^[a-zA-Z]*$");;
-        defaultCity.setMaxLength(30);
         defaultCity.setRequiredIndicatorVisible(true);
+        defaultCity.setMaxLength(30);
+        defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
+        defaultCity.setPattern("^[a-zA-Z]*$");
         defaultCity.addValueChangeListener(event -> {
         	String value = event.getValue();
         	boolean isValid = value.matches(("^[a-zA-Z]*$"));
@@ -227,11 +204,10 @@ public class RegisterView extends Composite<VerticalLayout> {
         layoutColumn2.add(layoutRow);
         layoutRow.add(registerButton);
         layoutRow.add(alreadyMemberButton);
-        
+
         User user = new User();
         binder.setBean(user);
     }
-	
 
 	private boolean isValidPassword(String value) {
 	    // Password must have at least 8 characters, one capital letter, one special character, and one digit
@@ -240,6 +216,10 @@ public class RegisterView extends Composite<VerticalLayout> {
 	}
 
 	private void onRegister(Binder<User> binder) {
+        if (binder.validate().isOk() == false){
+            HelperUtil.showNotification("Invalid Input !!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+            return;
+        }
 		if (binder.getFields().anyMatch(a -> a.isEmpty())) {
             HelperUtil.showNotification("Empty fields detected!!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
             return;
