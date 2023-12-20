@@ -44,6 +44,7 @@ import de.srh.toolify.frontend.data.User;
 import de.srh.toolify.frontend.error.InternalErrorView;
 import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
+import de.srh.toolify.frontend.views.login.LoginView;
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Checkout")
@@ -83,7 +84,7 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
     BigDecimal totalPrice = BigDecimal.ZERO;
     
     @SuppressWarnings("unchecked")
-    public CheckoutView() {
+    public CheckoutView() throws InterruptedException {
         
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
@@ -170,9 +171,14 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
         defaultPincode.setReadOnly(true);
         defaultCity.setReadOnly(true);
 
-        String email = HelperUtil.getEmailFromSession();
-        String encodedEmail = null;
-        encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
+        String email;
+        try {
+            email = HelperUtil.getEmailFromSession();
+        } catch (Exception e) {
+            UI.getCurrent().getPage().setLocation("http://localhost:8081/login");
+            return;
+        }
+        String encodedEmail = URLEncoder.encode(Objects.requireNonNull(email), StandardCharsets.UTF_8);
         ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
         ObjectMapper mapper = new ObjectMapper();
         User user = mapper.convertValue(data.getNode(), User.class);
@@ -222,13 +228,13 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
         h3.setText("Total Price €" + this.getTotalPrice());
         h3.setWidth("max-content");       
         editCartButton.setText("Edit Cart");
-        layoutColumn3.setAlignSelf(FlexComponent.Alignment.END, editCartButton);
+        layoutColumn3.setAlignSelf(Alignment.END, editCartButton);
         editCartButton.setWidth("200px");
         editCartButton.addClickListener(event -> UI.getCurrent().navigate("cart"));
         payButton.setText("Pay");
         payButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         payButton.addClassName("payButton");
-        layoutColumn3.setAlignSelf(FlexComponent.Alignment.END, payButton);
+        layoutColumn3.setAlignSelf(Alignment.END, payButton);
         payButton.setWidth("200px");
         getContent().add(layoutRow);
         
