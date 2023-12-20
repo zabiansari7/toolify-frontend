@@ -1,12 +1,5 @@
 package de.srh.toolify.frontend.views.user;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itextpdf.text.DocumentException;
@@ -38,22 +31,19 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.InputStreamFactory;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-
 import de.srh.toolify.frontend.client.RestClient;
-import de.srh.toolify.frontend.data.AddAddress;
-import de.srh.toolify.frontend.data.Address;
-import de.srh.toolify.frontend.data.EditUser;
-import de.srh.toolify.frontend.data.PurchaseHistory;
-import de.srh.toolify.frontend.data.ResponseData;
-import de.srh.toolify.frontend.data.User;
-import de.srh.toolify.frontend.data.UserForAddress;
+import de.srh.toolify.frontend.data.*;
 import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.utils.PDFGen;
 import de.srh.toolify.frontend.views.MainLayout;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @PageTitle("Profile | Toolify")
 @Route(value = "profile", layout = MainLayout.class)

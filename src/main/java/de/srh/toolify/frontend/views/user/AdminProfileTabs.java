@@ -135,34 +135,22 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         
         firstname.setLabel("First Name");
         firstname.setValueChangeMode(ValueChangeMode.EAGER);
-        firstname.setRequired(true);
         firstname.setPattern("^[a-zA-Z]*$");
         firstname.setMaxLength(30);
         firstname.setRequiredIndicatorVisible(true);
         firstname.setClearButtonVisible(true);
-        firstname.addValueChangeListener(event -> {
-        	String value = event.getValue();
-        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
-        	firstname.setInvalid(!isValid);
-        });
 
         lastname.setLabel("Last Name");
         lastname.setValueChangeMode(ValueChangeMode.EAGER);
         lastname.setMaxLength(30);
         lastname.setRequiredIndicatorVisible(true);
-        lastname.setRequired(true);
         lastname.setPattern("^[a-zA-Z]*$");
-        lastname.addValueChangeListener(event -> {
-        	String value = event.getValue();
-        	boolean isValid = value.matches(("^[a-zA-Z]*$"));
-        	lastname.setInvalid(!isValid);
-        });
 
         email.setLabel("Email");
         
         mobile.setLabel("Mobile");
         mobile.setPattern("^\\+\\d{0,15}$");
-        mobile.setRequired(true);
+        mobile.setRequiredIndicatorVisible(true);
         mobile.setMaxLength(15);
         mobile.addValueChangeListener(event -> {
             String value = event.getValue();
@@ -174,54 +162,32 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 				mobile.setHelperText("Mobile number should start with '+' and then only 15 numbers");
 				
 			}
-            
         });
 
         defaultStreetName.setLabel("Street");
         defaultStreetName.setValueChangeMode(ValueChangeMode.EAGER);
         defaultStreetName.setRequiredIndicatorVisible(true);
         defaultStreetName.setPattern("^[a-zA-Z]*$");
-        defaultStreetName.setRequired(true);
         defaultStreetName.setMaxLength(30);
-        defaultStreetName.addValueChangeListener(event -> {
-        	String value = event.getValue();
-        	boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
-        	defaultStreetName.setInvalid(!isValid);
-        });
 
         defaultStreetNumber.setLabel("Number");
-        defaultStreetNumber.setRequired(true);
         defaultStreetNumber.setPattern("\\d{0,3}");
         defaultStreetNumber.setMaxLength(3);
         defaultStreetNumber.setWidth("min-content");
         defaultStreetNumber.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultStreetNumber.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            defaultStreetNumber.setValue(newValue);
-        });
         
         defaultPincode.setLabel("Pincode");
         defaultPincode.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultPincode.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            defaultPincode.setValue(newValue);
-        });
         defaultPincode.setPattern("\\d{0,5}");
         defaultPincode.setWidth("min-content");
         defaultPincode.setMaxLength(5);
-        defaultPincode.setRequired(true);
       
         defaultCity.setLabel("City");
         defaultCity.setWidth("min-content");
         defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultCity.setPattern("^[a-zA-Z ]*$");;
+        defaultCity.setPattern("^[a-zA-Z ]*$");
         defaultCity.setMaxLength(30);
         defaultCity.setRequiredIndicatorVisible(true);
-        defaultCity.addValueChangeListener(event -> {
-        	String value = event.getValue();
-        	boolean isValid = value.matches(("^[a-zA-Z ]*$"));
-        	defaultCity.setInvalid(!isValid);
-        });
         
         adminDetailsHorizontalLayout.addClassName(Gap.MEDIUM);
         adminDetailsHorizontalLayout.setWidth("100%");
@@ -246,8 +212,6 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         adminDetailsFormLayout.add(defaultCity);
         adminDetailsMain.add(adminDetailsHorizontalLayout);
         adminDetailsHorizontalLayout.add(adminDetailsEditButton);
-        //adminDetailsHorizontalLayout.add(adminDetailsCancelButton);  
-        
         
         User admin = getUserByEmail();
         binder.setBean(admin);
@@ -283,13 +247,20 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
             encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
 
             EditUser editUser = prepareEditUser();
-        	RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
-        	System.out.println("CHECK :: " + binder.getBean().getEmail());
-        	adminDetailsHorizontalLayout.removeAll();
-        	adminDetailsHorizontalLayout.add(adminDetailsEditButton);
-        	binder.setReadOnly(true);
-        	showNotification("Your details has been updated successfully", NotificationVariant.LUMO_SUCCESS);
-        	
+        	ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
+            try {
+                if (data.getConnection().getResponseCode() != 201) {
+                    HelperUtil.showNotification("Error occurred while updating user", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+                } else {
+                    adminDetailsHorizontalLayout.removeAll();
+                    adminDetailsHorizontalLayout.add(adminDetailsEditButton);
+                    binder.setReadOnly(true);
+                    HelperUtil.showNotification("Your details has been updated successfully", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
+                }
+            } catch (IOException ex) {
+                HelperUtil.showNotification("Error occurred while updating user", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+                throw new RuntimeException(ex);
+            }
         });
         
         return adminDetailsMain;
@@ -319,8 +290,18 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 	private User getUserByEmail() {
     	String encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
         ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(data.getNode(), User.class);		
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.convertValue(data.getNode(), User.class);
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+        return null;
 	}
 
 	private VerticalLayout getAdminOrdersLayout() {    	
