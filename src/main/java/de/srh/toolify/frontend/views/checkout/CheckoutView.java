@@ -44,7 +44,6 @@ import de.srh.toolify.frontend.data.User;
 import de.srh.toolify.frontend.error.InternalErrorView;
 import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.views.MainLayout;
-import de.srh.toolify.frontend.error.AlreadyLoggedInView;
 import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Checkout")
