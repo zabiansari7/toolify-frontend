@@ -390,7 +390,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
             try {
                 PDFGen app = new PDFGen();
                 pdf = app.createPdf(purchaseHistory);
-            } catch (DocumentException | IOException | XMPException e) {
+            } catch (DocumentException | IOException | XMPException | NullPointerException e) {
                 HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
                 throw new RuntimeException(e);
             }
