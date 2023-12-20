@@ -329,8 +329,18 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         String encodedEmail = null;
         encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
         ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(data.getNode(), User.class);
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.convertValue(data.getNode(), User.class);
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     private EditUser prepareEditUser() {
@@ -471,8 +481,18 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         String encodedEmail = null;
         encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
         ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + encodedEmail, null, null);
-        JsonNode addresses = data.getNode();
-        return addresses;
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing address information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                JsonNode addresses = data.getNode();
+                return addresses;
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing address information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     private ResponseData deleteAddressById(Long addressId) {

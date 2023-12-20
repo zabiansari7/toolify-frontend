@@ -79,14 +79,17 @@ public class HelperUtil {
 		try {
 			if (data.getConnection().getResponseCode() != 200) {
 				HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+				//throw new RuntimeException("Error occurred while downloading invoice");
+			} else {
+				JsonNode purchaseNode = data.getNode();
+				PurchaseHistory purchaseHistory = mapper.convertValue(purchaseNode, PurchaseHistory.class);
+				return purchaseHistory;
 			}
 		} catch (IOException e) {
 			HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
 			throw new RuntimeException(e);
 		}
-		JsonNode purchaseNode = data.getNode();
-		PurchaseHistory purchaseHistory = mapper.convertValue(purchaseNode, PurchaseHistory.class);
-		return purchaseHistory;
+		return null;
 	}
 
 }
