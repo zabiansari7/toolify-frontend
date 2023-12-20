@@ -76,7 +76,6 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
     Button userDetailsEditButton = new Button();
     Button userDetailsSaveButton = new Button();
     Button userDetailsCancelButton = new Button();
-    String emailFromSession;
 
     private boolean valuesMatches;
 
@@ -228,16 +227,11 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
                 HelperUtil.showNotification("Empty fields detected !", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
                 return;
             }
-            String encodedEmail = null;
-            encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
 
             EditUser editUser = prepareEditUser();
-
-            Map<String, Object> headers = new HashMap<>();
+            String encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
             String token = (String) VaadinSession.getCurrent().getAttribute("token");
-            headers.put(HttpHeaders.AUTHORIZATION, "Bearer "+ token);
-
-            ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class, headers);
+            ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class, token);
             try {
                 if (data.getConnection().getResponseCode() ==  201) {
                     userDetailsHorizontalLayout.removeAll();
@@ -466,12 +460,9 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
     }
 
     private JsonNode prepareOrderContent() {
-        String encodedEmail = null;
-        encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
-        Map<String, Object> headers = new HashMap<>();
+        String encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
         String token = (String) VaadinSession.getCurrent().getAttribute("token");
-        headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchases/history?email=" + encodedEmail, null, null, headers);
+        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchases/history?email=" + encodedEmail, null, null, token);
         try {
             if (data.getConnection().getResponseCode() != 200) {
                 HelperUtil.showNotification("Error occurred while processing Purchase History", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
@@ -485,9 +476,9 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
     }
 
     private JsonNode getAddressByEmail() {
-        String encodedEmail = null;
-        encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
-        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + encodedEmail, null, null);
+        String encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + encodedEmail, null, null, token);
         try {
             if (data.getConnection().getResponseCode() != 200) {
                 HelperUtil.showNotification("Error occurred while processing address information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
