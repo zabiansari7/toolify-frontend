@@ -120,7 +120,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         tabSheet.add("Admin Details", new Div(getAdminDetailsLayout(binder))).addClassName("tabStyle");
         tabSheet.add("Users Order History", new Div(getAdminOrdersLayout())).addClassName("tabStyle");
         tabSheet.add("Manage Products", new Div(getManageProductsLayout(binderProduct))).addClassName("tabStyle");
-        tabSheet.add("Manage Categoty", new Div(getManageCategoryLayout())).addClassName("tabStyle");
+        tabSheet.add("Manage Category", new Div(getManageCategoryLayout())).addClassName("tabStyle");
     }
 
     private VerticalLayout getAdminDetailsLayout(Binder<User> binder) {
@@ -440,9 +440,22 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		button.addClassName("clickable-button");
 		button.addThemeVariants(ButtonVariant.LUMO_ERROR);
         button.addClickListener(e -> {
-            deleteProductById(productId);
-            button.getElement().getParent().getParent().removeFromParent();
-            showNotification("Product Deleted successfully", NotificationVariant.LUMO_ERROR);
+            ResponseData data = deleteProductById(productId);
+            try {
+                if (data.getConnection().getResponseCode() == 201){
+                    button.getElement().getParent().getParent().removeFromParent();
+                    HelperUtil.showNotification("Product Deleted successfully", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                } else {
+                    if (data.getNode().get("message").toString().contains("a foreign key constraint fails")) {
+                        HelperUtil.showNotification("Cannot delete this Product. This Product is attached to a Purchase", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                    } else {
+                        HelperUtil.showNotification("Error occurred while deleting the Product", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                    }
+                }
+            } catch (IOException ex) {
+                HelperUtil.showNotification("Error occurred while deleting the Product", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                throw new RuntimeException(ex);
+            }
         });
 		return button;
 	}
@@ -473,7 +486,6 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         TextField categoryName = new TextField();
         categoryName.setLabel("Category");
         categoryName.setMaxLength(30);
-        categoryName.setRequired(true);
         categoryName.setRequiredIndicatorVisible(true);
 
         HorizontalLayout layoutRow2 = new HorizontalLayout();
@@ -508,7 +520,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 
         saveButton.addClickListener(event -> {
             if (categoryName.getValue().isEmpty() || categoryName.getValue().isBlank()) {
-                showNotification("Empty Field Detected !", NotificationVariant.LUMO_ERROR);
+                HelperUtil.showNotification("Empty Field Detected !", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
                 return;
             }
             addCategory(categoryName.getValue());
@@ -526,12 +538,20 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     private void addCategory(String name){
         Category category = new Category();
         category.setCategoryName(name);
-        RestClient.requestHttp("POST", "http://localhost:8080/private/admin/categories/category", category, Category.class);
+        ResponseData data = RestClient.requestHttp("POST", "http://localhost:8080/private/admin/categories/category", category, Category.class);
+        try {
+            if (data.getConnection().getResponseCode() != 201) {
+                HelperUtil.showNotification("Error occurred while saving category", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while saving category", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
     }
 
     private Button createEditCategoryButton(VerticalLayout main, Category category){
         Button button = new Button("Edit");
-        button.setWidth("20%");
+        button.setWidth("10%");
         button.addClassName("clickable-button");
         button.addClickListener(event -> {
             Dialog dialog = new Dialog();
@@ -554,7 +574,6 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         categoryName.setLabel("Category");
         categoryName.setValue(category.getCategoryName());
         categoryName.setMaxLength(30);
-        categoryName.setRequired(true);
         categoryName.setRequiredIndicatorVisible(true);
 
         HorizontalLayout layoutRow2 = new HorizontalLayout();
@@ -605,31 +624,51 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     private void editCategory(Long categoryId, String categoryName){
         CategoryForEdit category = new CategoryForEdit();
         category.setCategoryName(categoryName);
-        RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/categories/category/" + categoryId, category, CategoryForEdit.class);
+        ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/categories/category/" + categoryId, category, CategoryForEdit.class);
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred updating the category", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred updating the category", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
     }
 
 
-
-/*    private Button createDeleteCategoryButton(Long categoryId){
+    private Button createDeleteCategoryButton(Long categoryId){
         Button button = new Button("Delete");
         button.setWidth("10%");
         button.addClassName("clickable-button");
         button.addThemeVariants(ButtonVariant.LUMO_ERROR);
         button.addClickListener(event -> {
-            deleteCategoryById(categoryId);
-            button.getElement().getParent().getParent().removeFromParent();
-            showNotification("Category deleted successfully", NotificationVariant.LUMO_ERROR);
-        });
+            ResponseData data = deleteCategoryById(categoryId);
+            try {
+                if (data.getConnection().getResponseCode() == 201){
+                    button.getElement().getParent().removeFromParent();
+                    HelperUtil.showNotification("Category deleted successfully", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                } else {
+                    if (data.getNode().get("message").toString().contains("a foreign key constraint fails")) {
+                        HelperUtil.showNotification("Cannot delete this Category. This Category is attached to an existing Product", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                    } else {
+                        HelperUtil.showNotification("Error occurred while deleting the Category !!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                    }
+                }
+            } catch (IOException e) {
+                HelperUtil.showNotification("Error occurred while deleting the Category !!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                throw new RuntimeException(e);
+            }});
         return button;
     }
 
-    private void deleteCategoryById(Long categoryId) {
-        RestClient client = new RestClient();
-        client.requestHttp("DELETE", "http://localhost:8080/private/admin/categories/category/" + categoryId, null, null);
-    }*/
+    private ResponseData deleteCategoryById(Long categoryId) {
+        ResponseData data = RestClient.requestHttp("DELETE", "http://localhost:8080/private/admin/categories/category/" + categoryId, null, null);
+        return data;
+    }
 
-    private void deleteProductById(Long productId) {
-        RestClient.requestHttp("DELETE", "http://localhost:8080/private/admin/products/product/" + productId, null, null);
+    private ResponseData deleteProductById(Long productId) {
+        ResponseData data = RestClient.requestHttp("DELETE", "http://localhost:8080/private/admin/products/product/" + productId, null, null);
+        return data;
     }
 
     private VerticalLayout getManageProductsLayout(Binder<Product> binderProduct) {
@@ -642,7 +681,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         JsonNode productsNode = getAllProducts();
         ObjectMapper mapper = HelperUtil.getObjectMapper();
     	int count = 0;
-    	for (JsonNode productNode : productsNode) {
+    	for (JsonNode productNode : Objects.requireNonNull(productsNode)) {
     		count++;
     		Product product = mapper.convertValue(productNode, Product.class);
 			
@@ -694,31 +733,24 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRowDialog.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRowDialog);
         layoutRowDialog.addClassName(Gap.MEDIUM);
-        //layoutRow.setWidth("1100px");
         layoutRowDialog.setHeight("75px");
         layoutRowDialog.setAlignItems(Alignment.CENTER);
         layoutRowDialog.setJustifyContentMode(JustifyContentMode.CENTER);
+
         name.setLabel("Name");
         name.setValueChangeMode(ValueChangeMode.EAGER);
         name.setRequiredIndicatorVisible(true);
-        name.setRequired(true);
-        //name.setWidth("180px");
+
         description.setLabel("Description");
         description.setValueChangeMode(ValueChangeMode.EAGER);
         description.setRequiredIndicatorVisible(true);
-        description.setRequired(true);
-        //description.setWidth("180px");
+
         price.setLabel("Price");
         price.setValueChangeMode(ValueChangeMode.EAGER);
         price.setRequiredIndicatorVisible(true);
-        price.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            price.setValue(newValue);
-        });
         price.setPattern("\\d+(\\.\\d{2})?");
         price.setMaxLength(8);
-        price.setRequired(true);
-        //price.setWidth("180px");
+
         layoutRow2.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
         layoutRow2.addClassName(Gap.MEDIUM);
@@ -726,56 +758,51 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow2.setHeight("75px");
         layoutRow2.setAlignItems(Alignment.CENTER);
         layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
+
         quantity.setLabel("Quantity");
         quantity.setRequiredIndicatorVisible(true);
         quantity.setValueChangeMode(ValueChangeMode.EAGER);
-        quantity.setRequired(true);
         quantity.setMaxLength(3);
         quantity.setPattern("\\d{0,3}");
-        //quantity.setWidth("180px");
+
         voltage.setLabel("Voltage");
         layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, voltage);
-        //voltage.setWidth("180px");
+
         productDimensions.setLabel("Product Dimensions");
-        //productDimensions.setWidth("180px");
+
         layoutRow3.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow3);
         layoutRow3.addClassName(Gap.MEDIUM);
-        //layoutRow3.setWidth("1100px");
         layoutRow3.setHeight("75px");
         layoutRow3.setAlignItems(Alignment.CENTER);
         layoutRow3.setJustifyContentMode(JustifyContentMode.CENTER);
+
         itemWeight.setLabel("Item Weight");
-        //itemWeight.setWidth("180px");
         bodyMaterial.setLabel("Body Material");
-        //bodyMaterial.setWidth("180px");
         itemModelNumber.setLabel("Item Model Number");
-        //itemModelNumber.setWidth("180px");
+
         layoutRow4.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow4);
         layoutRow4.addClassName(Gap.MEDIUM);
-        //layoutRow4.setWidth("1100px");
         layoutRow4.setHeight("75px");
         layoutRow4.setAlignItems(Alignment.CENTER);
         layoutRow4.setJustifyContentMode(JustifyContentMode.CENTER);
+
         design.setLabel("Design");
-        //design.setWidth("180px");
         colour.setLabel("Colour");
-        //colour.setWidth("180px");
         batteriesRequired.setLabel("Batteries Required");
-        //batteriesRequired.setWidth("180px");
+
         layoutRow5.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow5);
         layoutRow5.addClassName(Gap.MEDIUM);
-        //layoutRow5.setWidth("1100px");
         layoutRow5.setHeight("75px");
         layoutRow5.setAlignItems(Alignment.CENTER);
         layoutRow5.setJustifyContentMode(JustifyContentMode.CENTER);
+
         image.setLabel("Image URL");
         image.setValueChangeMode(ValueChangeMode.EAGER);
         image.setRequiredIndicatorVisible(true);
-        image.setRequired(true);
-        //image.setWidth("180px");
+
         category.setLabel("Category");
         category.setPlaceholder("Select Category");
         category.setRequiredIndicatorVisible(true);
@@ -786,18 +813,20 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow6.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow6);
         layoutRow6.addClassName(Gap.MEDIUM);
-        //layoutRow6.setWidth("1100px");
         layoutRow6.getStyle().set("flex-grow", "1");
         layoutRow6.setAlignItems(Alignment.CENTER);
         layoutRow6.setJustifyContentMode(JustifyContentMode.CENTER);
+
         saveButton.setText("Save");
         saveButton.setWidth("min-content");
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         cancelButton.setText("Cancel");
         cancelButton.setWidth("min-content");
         cancelButton.addClickListener(e -> {
         	dialog.close();
         });
+
         dialogVerticalLayout.add(layoutRowDialog);
         layoutRowDialog.add(name);
         layoutRowDialog.add(description);
@@ -824,10 +853,17 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         category.setItemLabelGenerator(Category::getCategoryName);
 
         Product product = new Product();
-
         binderProduct.setBean(product);
         
         saveButton.addClickListener(e -> {
+            if (bindAddProduct.validate().isOk() == false) {
+                showNotification("Invalid Input !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+            if (bindAddProduct.getFields().anyMatch(field -> field.isEmpty())) {
+                showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
         	if (price.getValue().isEmpty() || price.getValue().isBlank()) {
         		showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
 				return;
@@ -836,16 +872,9 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         	    showNotification("Invalid Price Input !", NotificationVariant.LUMO_ERROR);
         	    return;
         	}
-        	if (bindAddProduct.validate().isOk() == false) {
-				showNotification("Invalid Input !", NotificationVariant.LUMO_ERROR);
-				return;
-			}
-        	if (bindAddProduct.getFields().anyMatch(field -> field.isEmpty())) {
-        		showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
-				return;
-			}
+
         	addProduct(binderProduct);
-        	showNotification("Product saved successfully", NotificationVariant.LUMO_SUCCESS);
+        	HelperUtil.showNotification("Product saved successfully", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
         	dialog.close();
         	main.removeAll();
         	main.getElement().executeJs("location.reload(true)");
@@ -855,17 +884,36 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 	}
 	
 	private  JsonNode addProduct(Binder<Product> productBinder) {
-		
 		Product product = productBinder.getBean();
 		ResponseData data = RestClient.requestHttp("POST","http://localhost:8080/private/admin/products/product", product, Product.class);
-		JsonNode productResponse = data.getNode();
-		return productResponse;
+        try {
+            if (data.getConnection().getResponseCode() != 201) {
+                HelperUtil.showNotification("Error saving the Product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                JsonNode productResponse = data.getNode();
+                return productResponse;
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error saving the Product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+		return null;
 	}
 	
 	private JsonNode getAllProducts() {
 		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/public/products/all", null, null);
-		JsonNode productsNode = data.getNode();
-		return productsNode;
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing products", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                JsonNode productsNode = data.getNode();
+                return productsNode;
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing products", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+		return null;
 	}
 
 	public Category getCategorySelectValue() {
@@ -896,7 +944,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
             } else {
                 hz.getStyle().set("background-color","whitesmoke");
             }
-            hz.add(createLabel(String.valueOf(count)), createLabel(category.getCategoryName()), createEditCategoryButton(main, category));
+            hz.add(createLabel(String.valueOf(count)), createLabel(category.getCategoryName()), createEditCategoryButton(main, category), createDeleteCategoryButton(category.getCategoryId()));
             main.add(hz);
         }
 
