@@ -41,10 +41,10 @@ import de.srh.toolify.frontend.utils.PDFGen;
 import de.srh.toolify.frontend.views.MainLayout;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 
 @PageTitle("AdminProfile | Toolify")
 @Route(value = "admin", layout = MainLayout.class)
@@ -411,7 +411,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		return header;
 	}
 	
-	private HorizontalLayout createEditDeleteLayout(Binder<Product> binderProduct, VerticalLayout mainLayout,Long productId) {
+	private HorizontalLayout createEditDeleteButtonLayout(Binder<Product> binderProduct, VerticalLayout mainLayout, Long productId) {
 		HorizontalLayout h = createHorizontalLayout();
         h.setWidth("115%");
 		h.add(createEditButton(binderProduct, mainLayout, productId), createDeleteButton(mainLayout, productId));
@@ -658,7 +658,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 					createLabel(product.getName()), 
 					createLabel(String.valueOf(product.getQuantity())), 
 					createLabel("€" + String.valueOf(product.getPrice())),
-					createEditDeleteLayout(binderProduct, main, product.getProductId()));
+					createEditDeleteButtonLayout(binderProduct, main, product.getProductId()));
 					main.add(productHorizontalLayout);
     	}
         return main;
@@ -666,8 +666,18 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 	
 	private JsonNode getPurchaseHistoryAll() {
 		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/admin/purchases/history/all", null, null);
-		JsonNode purchaseHistoryNode = data.getNode();
-		return purchaseHistoryNode;
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing purchase history", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                JsonNode purchaseHistoryNode = data.getNode();
+                return purchaseHistoryNode;
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing purchase history", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+		return null;
 	}
 	
 	private VerticalLayout createAddProductDialog(Dialog dialog, VerticalLayout main) {
@@ -898,7 +908,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         ObjectMapper mapper = HelperUtil.getObjectMapper();
         ProductForEdit product = mapper.convertValue(productNode, ProductForEdit.class);
         binderProduct.setBean(product);
-        category.setPlaceholder(productNode.get("category").get("categoryName").textValue());
+        category.setPlaceholder(Objects.requireNonNull(productNode).get("category").get("categoryName").textValue());
 
         VerticalLayout dialogVerticalLayout = new VerticalLayout();
 
@@ -912,35 +922,24 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRowDialog.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRowDialog);
         layoutRowDialog.addClassName(Gap.MEDIUM);
-        //layoutRow.setWidth("1100px");
         layoutRowDialog.setHeight("75px");
         layoutRowDialog.setAlignItems(Alignment.CENTER);
         layoutRowDialog.setJustifyContentMode(JustifyContentMode.CENTER);
+
         name.setLabel("Name");
         name.setValueChangeMode(ValueChangeMode.EAGER);
         name.setRequiredIndicatorVisible(true);
-        name.setRequired(true);
-        //name.setWidth("180px");
+
         description.setLabel("Description");
         description.setValueChangeMode(ValueChangeMode.EAGER);
         description.setRequiredIndicatorVisible(true);
-        description.setRequired(true);
-        //description.setWidth("180px");
+
         price.setLabel("Price");
         price.setValueChangeMode(ValueChangeMode.EAGER);
         price.setRequiredIndicatorVisible(true);
-        price.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            price.setValue(newValue);
-        });
         price.setPattern("\\d+(\\.\\d{2})?");
         price.setMaxLength(8);
-        price.setRequired(true);
-        price.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            price.setValue(newValue);
-        });
-        //price.setWidth("180px");
+
         layoutRow2.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
         layoutRow2.addClassName(Gap.MEDIUM);
@@ -948,59 +947,54 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow2.setHeight("75px");
         layoutRow2.setAlignItems(Alignment.CENTER);
         layoutRow2.setJustifyContentMode(JustifyContentMode.CENTER);
+
         quantity.setLabel("Quantity");
         quantity.setPattern("\\d{0,3}");
         quantity.setValueChangeMode(ValueChangeMode.EAGER);
         quantity.setRequiredIndicatorVisible(true);
         quantity.setMaxLength(3);
-        quantity.setRequired(true);
-        //quantity.setWidth("180px");
+
         voltage.setLabel("Voltage");
         layoutRow2.setAlignSelf(FlexComponent.Alignment.CENTER, voltage);
-        //voltage.setWidth("180px");
+
         productDimensions.setLabel("Product Dimensions");
-        //productDimensions.setWidth("180px");
+
         layoutRow3.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow3);
+
         layoutRow3.addClassName(Gap.MEDIUM);
-        //layoutRow3.setWidth("1100px");
         layoutRow3.setHeight("75px");
         layoutRow3.setAlignItems(Alignment.CENTER);
         layoutRow3.setJustifyContentMode(JustifyContentMode.CENTER);
+
         itemWeight.setLabel("Item Weight");
-        //itemWeight.setWidth("180px");
         bodyMaterial.setLabel("Body Material");
-        //bodyMaterial.setWidth("180px");
         itemModelNumber.setLabel("Item Model Number");
-        //itemModelNumber.setWidth("180px");
+
         layoutRow4.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow4);
         layoutRow4.addClassName(Gap.MEDIUM);
-        //layoutRow4.setWidth("1100px");
         layoutRow4.setHeight("75px");
         layoutRow4.setAlignItems(Alignment.CENTER);
         layoutRow4.setJustifyContentMode(JustifyContentMode.CENTER);
+
         design.setLabel("Design");
-        //design.setWidth("180px");
         colour.setLabel("Colour");
-        //colour.setWidth("180px");
         batteriesRequired.setLabel("Batteries Required");
-        //batteriesRequired.setWidth("180px");
+
         layoutRow5.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow5);
         layoutRow5.addClassName(Gap.MEDIUM);
-        //layoutRow5.setWidth("1100px");
         layoutRow5.setHeight("75px");
         layoutRow5.setAlignItems(Alignment.CENTER);
         layoutRow5.setJustifyContentMode(JustifyContentMode.CENTER);
+
         image.setLabel("Image URL");
         image.setValueChangeMode(ValueChangeMode.EAGER);
         image.setRequiredIndicatorVisible(true);
-        image.setRequired(true);
-        //image.setWidth("180px");
+
         category.setLabel("Category");
         category.setRequiredIndicatorVisible(true);
-        //category.setPlaceholder(product.getCategory().getCategoryName());
         category.setValue(product.getCategory());
         category.setPlaceholder(productNode.get("category").get("categoryName").textValue());
         List<Category> categories = HelperUtil.getAllCategoriesAsClass();
@@ -1013,19 +1007,21 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         layoutRow6.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow6);
         layoutRow6.addClassName(Gap.MEDIUM);
-        //layoutRow6.setWidth("1100px");
         layoutRow6.getStyle().set("flex-grow", "1");
         layoutRow6.setAlignItems(Alignment.CENTER);
         layoutRow6.setJustifyContentMode(JustifyContentMode.CENTER);
+
         saveButton.setText("Save");
         saveButton.setWidth("min-content");
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         cancelButton.setText("Cancel");
         cancelButton.setWidth("min-content");
         cancelButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         cancelButton.addClickListener(e -> {
             dialog.close();
         });
+
         dialogVerticalLayout.add(layoutRowDialog);
         layoutRowDialog.add(name);
         layoutRowDialog.add(description);
@@ -1051,15 +1047,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 
         category.setItemLabelGenerator(Category::getCategoryName);
         product.setProductId(productId);
+
         saveButton.addClickListener(e -> {
-            if (price.getValue().isEmpty() || price.getValue().isBlank()) {
-                showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
-                return;
-            }
-            if (!price.getValue().matches("\\d+(\\.\\d{2})?")) {
-                showNotification("Invalid Price Input !", NotificationVariant.LUMO_ERROR);
-                return;
-            }
             if (binderEditProduct.validate().isOk() == false) {
                 showNotification("Invalid Input !", NotificationVariant.LUMO_ERROR);
                 return;
@@ -1068,15 +1057,23 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
                 showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
                 return;
             }
+            if (price.getValue().isEmpty() || price.getValue().isBlank()) {
+                showNotification("Empty Fields Detected !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+            if (!price.getValue().matches("\\d+(\\.\\d{2})?")) {
+                showNotification("Invalid Price Input !", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+
             if (this.getCategorySelectValue() == null) {
                 product.setCategoryTo(productNode.get("category").get("categoryId").asLong());
             } else {
                 product.setCategoryTo(this.getCategorySelectValue().getCategoryId());
-                System.out.println("IS UT THERE :: " + product.getCategoryTo());
             }
             editProduct(productId);
 
-            showNotification("Product updated successfully", NotificationVariant.LUMO_SUCCESS);
+            HelperUtil.showNotification("Product updated successfully", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
             dialog.close();
             main.removeAll();
             main.getElement().executeJs("location.reload(true)");
@@ -1086,14 +1083,33 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     }
 
     private JsonNode editProduct(Long productId) {
-        System.out.println(binderProduct.getBean().toString());
-        ResponseData date = RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + productId, binderProduct.getBean(), ProductForEdit.class);
-        return date.getNode();
+        ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + productId, binderProduct.getBean(), ProductForEdit.class);
+        try {
+            if (data.getConnection().getResponseCode() != 201) {
+                HelperUtil.showNotification("Error occurred while updating product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                return data.getNode();
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while updating product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     private JsonNode getProductById(Long productId) {
         ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/public/products/product/" + productId, null, null);
-        JsonNode productNode = data.getNode();
-        return productNode;
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing product information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                JsonNode productNode = data.getNode();
+                return productNode;
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing product information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 }
