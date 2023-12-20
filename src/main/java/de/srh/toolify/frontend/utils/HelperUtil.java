@@ -1,5 +1,6 @@
 package de.srh.toolify.frontend.utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -75,6 +76,14 @@ public class HelperUtil {
 	public static PurchaseHistory getPurchaseByInvoice(int invoice) {
 		ObjectMapper mapper = HelperUtil.getObjectMapper();
 		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchase/history/" + invoice, null, null);
+		try {
+			if (data.getConnection().getResponseCode() != 200) {
+				HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+			}
+		} catch (IOException e) {
+			HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+			throw new RuntimeException(e);
+		}
 		JsonNode purchaseNode = data.getNode();
 		PurchaseHistory purchaseHistory = mapper.convertValue(purchaseNode, PurchaseHistory.class);
 		return purchaseHistory;

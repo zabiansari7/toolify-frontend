@@ -113,34 +113,23 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         getContent().getStyle().set("flex-grow", "1");
         getContent().setJustifyContentMode(JustifyContentMode.START);
         getContent().setAlignItems(Alignment.CENTER);
+
         userDetailsMain.setWidth("100%");
         userDetailsMain.setMaxWidth("800px");
         userDetailsMain.setHeight("min-content");
         userDetailsFormLayout.setWidth("100%");
+
         firstname.setLabel("First Name");
         firstname.setValueChangeMode(ValueChangeMode.EAGER);
-        firstname.setRequired(true);
         firstname.setPattern("^[a-zA-Z]*$");
         firstname.setMaxLength(30);
         firstname.setRequiredIndicatorVisible(true);
-        firstname.setClearButtonVisible(true);
-        firstname.addValueChangeListener(event -> {
-            String value = event.getValue();
-            boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
-            firstname.setInvalid(!isValid);
-        });
 
         lastname.setLabel("Last Name");
         lastname.setValueChangeMode(ValueChangeMode.EAGER);
         lastname.setMaxLength(30);
         lastname.setRequiredIndicatorVisible(true);
-        lastname.setRequired(true);
         lastname.setPattern("^[a-zA-Z]*$");
-        lastname.addValueChangeListener(event -> {
-            String value = event.getValue();
-            boolean isValid = value.matches(("^[a-zA-Z]*$"));
-            lastname.setInvalid(!isValid);
-        });
 
         email.setLabel("Email");
 
@@ -165,35 +154,17 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         defaultStreetName.setValueChangeMode(ValueChangeMode.EAGER);
         defaultStreetName.setRequiredIndicatorVisible(true);
         defaultStreetName.setPattern("^[a-zA-Z]*$");
-        defaultStreetName.setRequired(true);
         defaultStreetName.setMaxLength(30);
-        defaultStreetName.addValueChangeListener(event -> {
-            String value = event.getValue();
-            boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
-            defaultStreetName.setInvalid(!isValid);
-        });
 
         defaultStreetNumber.setLabel("Number");
         defaultStreetNumber.setRequiredIndicatorVisible(true);
         defaultStreetNumber.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultStreetNumber.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            defaultStreetNumber.setValue(newValue);
-            defaultStreetNumber.setRequired(true);
-            defaultStreetNumber.setPattern("\\d{0,3}");
-            defaultStreetNumber.setMaxLength(3);
-            //defaultStreetNumber.setWidth("min-content");
-        });
-
+        defaultStreetNumber.setPattern("\\d{0,3}");
+        defaultStreetNumber.setMaxLength(3);
 
         defaultPincode.setLabel("Pincode");
-        defaultPincode.setRequired(true);
         defaultPincode.setRequiredIndicatorVisible(true);
         defaultPincode.setValueChangeMode(ValueChangeMode.EAGER);
-        defaultPincode.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            defaultPincode.setValue(newValue);
-        });
         defaultPincode.setPattern("\\d{0,5}");
         defaultPincode.setWidth("min-content");
         defaultPincode.setMaxLength(5);
@@ -202,14 +173,8 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         defaultCity.setWidth("min-content");
         defaultCity.setValueChangeMode(ValueChangeMode.EAGER);
         defaultCity.setPattern("^[a-zA-Z]*$");
-        ;
         defaultCity.setMaxLength(30);
         defaultCity.setRequiredIndicatorVisible(true);
-        defaultCity.addValueChangeListener(event -> {
-            String value = event.getValue();
-            boolean isValid = value.matches(("^[a-zA-Z]*$"));
-            defaultCity.setInvalid(!isValid);
-        });
 
         userDetailsHorizontalLayout.addClassName(Gap.MEDIUM);
         userDetailsHorizontalLayout.setWidth("100%");
@@ -275,12 +240,21 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
             }
 
             EditUser editUser = prepareEditUser();
-            RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
-            System.out.println("CHECK :: " + binder.getBean().getEmail());
-            userDetailsHorizontalLayout.removeAll();
-            userDetailsHorizontalLayout.add(userDetailsEditButton);
-            binder.setReadOnly(true);
-            showNotification("Your details has been updated successfully", NotificationVariant.LUMO_SUCCESS);
+            ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
+            try {
+                if (data.getConnection().getResponseCode() ==  201) {
+                    userDetailsHorizontalLayout.removeAll();
+                    userDetailsHorizontalLayout.add(userDetailsEditButton);
+                    binder.setReadOnly(true);
+                    HelperUtil.showNotification("Your details has been updated successfully", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
+                } else {
+                    HelperUtil.showNotification("Error occurred while updating the User !!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                }
+            } catch (IOException ex) {
+                HelperUtil.showNotification("Error occurred while updating the User !!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                throw new RuntimeException(ex);
+            }
+
 
         });
 
@@ -417,9 +391,10 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
                 PDFGen app = new PDFGen();
                 pdf = app.createPdf(purchaseHistory);
             } catch (DocumentException | IOException | XMPException e) {
+                HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
                 throw new RuntimeException(e);
             }
-            showNotification(String.format("PDF for invoice number '%d' generated successfully", invoiceNo), NotificationVariant.LUMO_SUCCESS);
+            HelperUtil.showNotification(String.format("PDF for invoice number '%d' generated successfully", invoiceNo), NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
             getElement().executeJs("window.open($0.href, '_blank')", pdf.getElement());
             main.add(pdf);
 
@@ -441,10 +416,11 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
                     if (data.getNode().get("message").toString().contains("a foreign key constraint fails")) {
                         HelperUtil.showNotification("Cannot delete this address. This Address is attached to a Purchase", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
                     } else {
-                        HelperUtil.showNotification("Error occurred while deleting the Address", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+                        HelperUtil.showNotification("Error occurred while deleting the Address !!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
                     }
                 }
             } catch (IOException e) {
+                HelperUtil.showNotification("Error occurred while deleting the Address !!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
                 throw new RuntimeException(e);
             }
         });
@@ -479,10 +455,16 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         String encodedEmail = null;
         encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
         ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchases/history?email=" + encodedEmail, null, null);
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing Purchase History", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing Purchase History", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
         JsonNode purchaseOrderNode = data.getNode();
         return purchaseOrderNode;
-
-
     }
 
     private JsonNode getAddressByEmail() {
@@ -510,41 +492,34 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         HorizontalLayout layoutRow4 = new HorizontalLayout();
         Button saveButton = new Button();
         Button cancelButton = new Button();
+
         addressBinder.forField(streetName).bind(AddAddress::getStreetName, AddAddress::setStreetName);
         addressBinder.forField(streetNumber).bind(AddAddress::getStreetNumber, AddAddress::setStreetNumber);
         addressBinder.forField(postcode).bind(AddAddress::getPostCode, AddAddress::setPostCode);
         addressBinder.forField(cityName).bind(AddAddress::getCityName, AddAddress::setCityName);
+
         dialogVerticalLayout.setWidth("100%");
         dialogVerticalLayout.getStyle().set("flex-grow", "1");
         layoutRow.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow);
         layoutRow.addClassName(Gap.MEDIUM);
-        //layoutRow.setWidth("1100px");
         layoutRow.setHeight("75px");
         layoutRow.setAlignItems(Alignment.CENTER);
         layoutRow.setJustifyContentMode(JustifyContentMode.CENTER);
+
         streetName.setLabel("Street");
         streetName.setValueChangeMode(ValueChangeMode.EAGER);
         streetName.setRequiredIndicatorVisible(true);
         streetName.setPattern("^[a-zA-Z]*$");
         streetName.setRequired(true);
         streetName.setMaxLength(30);
-/*        streetName.addValueChangeListener(event -> {
-            String value = event.getValue();
-            boolean isValid = value.matches(("\"^[a-zA-Z]*$\""));
-            streetName.setInvalid(!isValid);
-        });*/
+
         streetNumber.setLabel("Number");
         streetNumber.setRequiredIndicatorVisible(true);
         streetNumber.setValueChangeMode(ValueChangeMode.EAGER);
         streetNumber.setPattern("\\d{0,3}");
         streetNumber.setMaxLength(3);
-/*        streetNumber.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            streetNumber.setValue(newValue);
-            streetNumber.setRequired(true);
-        });*/
-        //layoutRow2.setWidthFull();
+
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow2);
         layoutRow2.addClassName(Gap.MEDIUM);
         layoutRow2.setWidth("100%");
@@ -556,28 +531,22 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         layoutRow3.setHeight("75px");
         layoutRow3.setAlignItems(Alignment.CENTER);
         layoutRow3.setJustifyContentMode(JustifyContentMode.CENTER);
+
         postcode.setLabel("Pincode");
         postcode.setRequired(true);
         postcode.setRequiredIndicatorVisible(true);
         postcode.setValueChangeMode(ValueChangeMode.EAGER);
-/*        postcode.addValueChangeListener(event -> {
-            String newValue = event.getValue().replaceAll(",", "");
-            postcode.setValue(newValue);
-        });*/
         postcode.setPattern("\\d{0,5}");
         postcode.setWidth("min-content");
         postcode.setMaxLength(5);
+
         cityName.setLabel("City");
         cityName.setWidth("min-content");
         cityName.setValueChangeMode(ValueChangeMode.EAGER);
         cityName.setPattern("^[a-zA-Z]*$");
         cityName.setMaxLength(30);
         cityName.setRequiredIndicatorVisible(true);
-/*        cityName.addValueChangeListener(event -> {
-            String value = event.getValue();
-            boolean isValid = value.matches(("^[a-zA-Z]*$"));
-            cityName.setInvalid(!isValid);
-        });*/
+
         layoutRow4.setWidthFull();
         dialogVerticalLayout.setFlexGrow(1.0, layoutRow4);
         layoutRow4.addClassName(Gap.MEDIUM);
@@ -595,8 +564,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         dialogVerticalLayout.add(layoutRow);
         layoutRow.add(streetName);
         layoutRow.add(streetNumber);
-        // getContent().add(layoutRow2);
-        //layoutRow2.add(layoutRow3);
+
         dialogVerticalLayout.add(layoutRow3);
         layoutRow3.add(postcode);
         layoutRow3.add(cityName);
@@ -613,21 +581,29 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
                 showNotification("Please correct your input", NotificationVariant.LUMO_ERROR);
                 return;
             }
-
             if (addressBinder.getFields().anyMatch(a -> a.isEmpty())) {
                 showNotification("Empty fields detected !", NotificationVariant.LUMO_ERROR);
                 return;
             }
-            addAddress(streetName.getValue(), Integer.parseInt(streetNumber.getValue()), Integer.parseInt(postcode.getValue()), cityName.getValue());
-            showNotification("Address saved successfully", NotificationVariant.LUMO_SUCCESS);
-            dialog.close();
-            main.removeAll();
-            main.getElement().executeJs("location.reload(true)");
+            ResponseData data = addAddress(streetName.getValue(), Integer.parseInt(streetNumber.getValue()), Integer.parseInt(postcode.getValue()), cityName.getValue());
+            try {
+                if (data.getConnection().getResponseCode() == 201){
+                    HelperUtil.showNotification("Address saved successfully", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
+                    dialog.close();
+                    main.removeAll();
+                    main.getElement().executeJs("location.reload(true)");
+                } else {
+                    HelperUtil.showNotification("Error occurred while adding the address", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
+                }
+            } catch (IOException ex) {
+                HelperUtil.showNotification("Error occurred while adding the address", NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
+                throw new RuntimeException(ex);
+            }
         });
         return dialogVerticalLayout;
     }
 
-    private JsonNode addAddress(String streetName, int streetNumber, int postcode, String city) {
+    private ResponseData addAddress(String streetName, int streetNumber, int postcode, String city) {
 
         AddAddress address = new AddAddress();
         address.setStreetName(streetName);
@@ -640,8 +616,6 @@ public class UserProfileTabs extends Composite<VerticalLayout> {
         address.setUser(user);
 
         ResponseData data = RestClient.requestHttp("POST", "http://localhost:8080/private/addresses/address", address, AddAddress.class);
-
-        JsonNode postMessage = data.getNode();
-        return postMessage;
+        return data;
     }
 }
