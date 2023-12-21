@@ -1,6 +1,8 @@
 package de.srh.toolify.frontend.utils;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -9,15 +11,14 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.VaadinSession;
 
 import de.srh.toolify.frontend.client.RestClient;
-import de.srh.toolify.frontend.data.Category;
-import de.srh.toolify.frontend.data.Product;
-import de.srh.toolify.frontend.data.PurchaseHistory;
-import de.srh.toolify.frontend.data.ResponseData;
+import de.srh.toolify.frontend.data.*;
+import de.srh.toolify.frontend.views.login.LoginView;
 
 public class HelperUtil {
 	
@@ -41,7 +42,7 @@ public class HelperUtil {
 	}
 	
 	public static List<PurchaseHistory> sortByTimeDescending(JsonNode purchaseHistoriesNode) {
-		List<PurchaseHistory> purchaseHistories = new ArrayList<>();
+        List<PurchaseHistory> purchaseHistories = new ArrayList<>();
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
 		purchaseHistoriesNode.forEach(purchaseHistoryNode -> {
@@ -111,7 +112,8 @@ public class HelperUtil {
 
 	public static PurchaseHistory getPurchaseByInvoice(int invoice) {
 		ObjectMapper mapper = HelperUtil.getObjectMapper();
-		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchase/history/" + invoice, null, null);
+		String token = (String) VaadinSession.getCurrent().getAttribute("token");
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchase/history/" + invoice, null, null, token);
 		try {
 			if (data.getConnection().getResponseCode() != 200) {
 				HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
@@ -122,6 +124,31 @@ public class HelperUtil {
 			}
 		} catch (IOException e) {
 			HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+			throw new RuntimeException(e);
+		}
+		return null;
+	}
+
+	public static User getUserByEmail() {
+		String email;
+		try {
+			email = HelperUtil.getEmailFromSession();
+		} catch (Exception e) {
+			UI.getCurrent().navigate(LoginView.class);
+			return new User();
+		}
+		String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
+		String token = (String) VaadinSession.getCurrent().getAttribute("token");
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null, token);
+		try {
+			if (data.getConnection().getResponseCode() != 200) {
+				HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+			} else {
+				ObjectMapper mapper = new ObjectMapper();
+				return mapper.convertValue(data.getNode(), User.class);
+			}
+		} catch (IOException e) {
+			HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
 			throw new RuntimeException(e);
 		}
 		return null;
