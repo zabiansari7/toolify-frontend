@@ -21,6 +21,8 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -279,6 +281,24 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
             
             purchaseRequest.setPurchaseItems(checkoutPurchaseItems);
         	ResponseData responseData = RestClient.requestHttp("POST", "http://localhost:8080/private/purchase/product", purchaseRequest, CheckoutRequest.class);
+            try {
+                if (responseData.getConnection().getResponseCode() != 201) {
+                    if (responseData.getNode().get("message").toString().contains("Quantity cannot go below 0")){
+                        HelperUtil.showNotification("One of the Product is not available in the store", NotificationVariant.LUMO_WARNING, Notification.Position.TOP_CENTER);
+                    } else {
+                        HelperUtil.showNotification("Error occurred while purchasing the Product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+                    }
+                } else {
+                    UI.getCurrent().navigate("orderplaced");
+                }
+            } catch (IOException ex) {
+                HelperUtil.showNotification("Error occurred while purchasing the Product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+                throw new RuntimeException(ex);
+            }
+
+
+
+
         	JsonNode responseNode = responseData.getNode();
         	int code = 0;
         	try {

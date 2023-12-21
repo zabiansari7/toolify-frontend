@@ -71,6 +71,11 @@ public class OrderPlacedView extends Composite<VerticalLayout> implements Before
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        if (VaadinSession.getCurrent().getAttribute("token") == null || VaadinSession.getCurrent().getAttribute("token").toString().isBlank() || VaadinSession.getCurrent().getAttribute("token").toString().isEmpty()) {
+            event.forwardTo(LoginView.class);
+            return;
+        }
+        VaadinSession.getCurrent().setAttribute("cartItems", new ArrayList<>());
 /*        if (AuthenticationManagerUtil.isAuthenticated(event) == false) {
             event.forwardTo(LoginView.class);
             return;
