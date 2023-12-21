@@ -394,10 +394,10 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
             try {
                 PDFGen app = new PDFGen();
                 pdf = app.createPdf(purchaseHistory);
-            } catch (DocumentException | IOException | XMPException e) {
+            } catch (DocumentException | IOException | XMPException | NullPointerException e) {
                 throw new RuntimeException(e);
             }
-            showNotification(String.format("PDF for invoice number '%d' generated successfully", invoiceNo), NotificationVariant.LUMO_SUCCESS);
+            HelperUtil.showNotification(String.format("PDF for invoice number '%d' generated successfully", invoiceNo), NotificationVariant.LUMO_SUCCESS, Position.TOP_CENTER);
             getElement().executeJs("window.open($0.href, '_blank')", pdf.getElement());
             main.add(pdf);
 
