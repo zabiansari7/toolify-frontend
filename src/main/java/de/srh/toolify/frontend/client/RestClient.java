@@ -9,8 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,7 +51,7 @@ public class RestClient {
                             responseStringBuilder.append(line);
                         }
                         // Print the server response body
-                        System.out.println("Response Body: " + responseStringBuilder.toString());
+                        //System.out.println("Response Body: " + responseStringBuilder.toString());
                         node = objectMapper.readTree(responseStringBuilder.toString());
                     }
                 }
@@ -67,15 +65,10 @@ public class RestClient {
                             while ((line = br.readLine()) != null) {
                                 responseStringBuilder.append(line);
                             }
-
                             // Print the server response body
-                            System.out.println("Error Response Body: " + responseStringBuilder);
-
+                            //System.out.println("Error Response Body: " + responseStringBuilder);
                             // Convert the error response JSON to a JsonNode
                             node = objectMapper.readTree(responseStringBuilder.toString());
-
-                            // Handle the error response as needed
-                            // Notification.show("Error Response: " + node);
                         }
                     } else {
                         // No error stream available, handle accordingly
@@ -131,7 +124,7 @@ public class RestClient {
                             responseStringBuilder.append(line);
                         }
                         // Print the server response body
-                        System.out.println("Response Body: " + responseStringBuilder);
+                        //System.out.println("Response Body: " + responseStringBuilder);
                         node = objectMapper.readTree(responseStringBuilder.toString());
                     }
                 }
@@ -145,15 +138,11 @@ public class RestClient {
                             while ((line = br.readLine()) != null) {
                                 responseStringBuilder.append(line);
                             }
-
                             // Print the server response body
-                            System.out.println("Error Response Body: " + responseStringBuilder);
-
+                            //System.out.println("Error Response Body: " + responseStringBuilder);
                             // Convert the error response JSON to a JsonNode
                             node = objectMapper.readTree(responseStringBuilder.toString());
 
-                            // Handle the error response as needed
-                            // Notification.show("Error Response: " + node);
                         }
                     } else {
                         // No error stream available, handle accordingly

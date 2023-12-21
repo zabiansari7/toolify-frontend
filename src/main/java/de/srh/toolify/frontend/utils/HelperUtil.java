@@ -1,13 +1,5 @@
 package de.srh.toolify.frontend.utils;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -15,10 +7,20 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.VaadinSession;
-
 import de.srh.toolify.frontend.client.RestClient;
-import de.srh.toolify.frontend.data.*;
+import de.srh.toolify.frontend.data.Category;
+import de.srh.toolify.frontend.data.PurchaseHistory;
+import de.srh.toolify.frontend.data.ResponseData;
+import de.srh.toolify.frontend.data.User;
 import de.srh.toolify.frontend.views.login.LoginView;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class HelperUtil {
 	
@@ -153,5 +155,4 @@ public class HelperUtil {
 		}
 		return null;
 	}
-
 }
