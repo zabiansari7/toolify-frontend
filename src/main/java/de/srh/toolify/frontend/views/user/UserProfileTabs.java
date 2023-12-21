@@ -42,16 +42,11 @@ import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.utils.PDFGen;
 import de.srh.toolify.frontend.views.MainLayout;
 import de.srh.toolify.frontend.views.login.LoginView;
-import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @PageTitle("Profile | Toolify")
 @Route(value = "profile", layout = MainLayout.class)
@@ -498,7 +493,8 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
     }
 
     private ResponseData deleteAddressById(Long addressId) {
-        ResponseData data = RestClient.requestHttp("DELETE", "http://localhost:8080/private/addresses/address/" + addressId, null, null);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        ResponseData data = RestClient.requestHttp("DELETE", "http://localhost:8080/private/addresses/address/" + addressId, null, null, token);
         return data;
     }
 
@@ -637,7 +633,8 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
         user.setEmail(HelperUtil.getEmailFromSession());
         address.setUser(user);
 
-        ResponseData data = RestClient.requestHttp("POST", "http://localhost:8080/private/addresses/address", address, AddAddress.class);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        ResponseData data = RestClient.requestHttp("POST", "http://localhost:8080/private/addresses/address", address, AddAddress.class, token);
         return data;
     }
 

@@ -76,11 +76,5 @@ public class OrderPlacedView extends Composite<VerticalLayout> implements Before
             return;
         }
         VaadinSession.getCurrent().setAttribute("cartItems", new ArrayList<>());
-/*        if (AuthenticationManagerUtil.isAuthenticated(event) == false) {
-            event.forwardTo(LoginView.class);
-            return;
-        }
-        VaadinSession.getCurrent().setAttribute("cartItems", new ArrayList<>());
-    }*/
     }
 }

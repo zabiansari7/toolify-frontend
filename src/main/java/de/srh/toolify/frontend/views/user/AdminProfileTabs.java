@@ -44,7 +44,6 @@ import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.utils.PDFGen;
 import de.srh.toolify.frontend.views.MainLayout;
 import de.srh.toolify.frontend.views.login.LoginView;
-import elemental.json.Json;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -251,7 +250,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> implements Befor
             encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
 
             EditUser editUser = prepareEditUser();
-        	ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
+            String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        	ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class, token);
             try {
                 if (data.getConnection().getResponseCode() != 201) {
                     HelperUtil.showNotification("Error occurred while updating user", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
@@ -549,7 +549,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> implements Befor
     private void addCategory(String name){
         Category category = new Category();
         category.setCategoryName(name);
-        ResponseData data = RestClient.requestHttp("POST", "http://localhost:8080/private/admin/categories/category", category, Category.class);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        ResponseData data = RestClient.requestHttp("POST", "http://localhost:8080/private/admin/categories/category", category, Category.class, token);
         try {
             if (data.getConnection().getResponseCode() != 201) {
                 HelperUtil.showNotification("Error occurred while saving category", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
@@ -635,7 +636,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> implements Befor
     private void editCategory(Long categoryId, String categoryName){
         CategoryForEdit category = new CategoryForEdit();
         category.setCategoryName(categoryName);
-        ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/categories/category/" + categoryId, category, CategoryForEdit.class);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/categories/category/" + categoryId, category, CategoryForEdit.class, token);
         try {
             if (data.getConnection().getResponseCode() != 200) {
                 HelperUtil.showNotification("Error occurred updating the category", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
@@ -673,12 +675,14 @@ public class AdminProfileTabs extends Composite<VerticalLayout> implements Befor
     }
 
     private ResponseData deleteCategoryById(Long categoryId) {
-        ResponseData data = RestClient.requestHttp("DELETE", "http://localhost:8080/private/admin/categories/category/" + categoryId, null, null);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        ResponseData data = RestClient.requestHttp("DELETE", "http://localhost:8080/private/admin/categories/category/" + categoryId, null, null, token);
         return data;
     }
 
     private ResponseData deleteProductById(Long productId) {
-        ResponseData data = RestClient.requestHttp("DELETE", "http://localhost:8080/private/admin/products/product/" + productId, null, null);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        ResponseData data = RestClient.requestHttp("DELETE", "http://localhost:8080/private/admin/products/product/" + productId, null, null, token);
         return data;
     }
 
@@ -715,7 +719,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> implements Befor
 	}
 	
 	private JsonNode getPurchaseHistoryAll() {
-		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/admin/purchases/history/all", null, null);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/admin/purchases/history/all", null, null, token);
         try {
             if (data.getConnection().getResponseCode() != 200) {
                 HelperUtil.showNotification("Error occurred while processing purchase history", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
@@ -896,7 +901,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> implements Befor
 	
 	private  JsonNode addProduct(Binder<Product> productBinder) {
 		Product product = productBinder.getBean();
-		ResponseData data = RestClient.requestHttp("POST","http://localhost:8080/private/admin/products/product", product, Product.class);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+		ResponseData data = RestClient.requestHttp("POST","http://localhost:8080/private/admin/products/product", product, Product.class, token);
         try {
             if (data.getConnection().getResponseCode() != 201) {
                 HelperUtil.showNotification("Error saving the Product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
@@ -1142,7 +1148,8 @@ public class AdminProfileTabs extends Composite<VerticalLayout> implements Befor
     }
 
     private JsonNode editProduct(Long productId) {
-        ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + productId, binderProduct.getBean(), ProductForEdit.class);
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+        ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/admin/products/product/" + productId, binderProduct.getBean(), ProductForEdit.class, token);
         try {
             if (data.getConnection().getResponseCode() != 201) {
                 HelperUtil.showNotification("Error occurred while updating product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);

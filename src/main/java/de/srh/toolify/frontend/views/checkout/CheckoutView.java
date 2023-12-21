@@ -180,11 +180,22 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
             UI.getCurrent().getPage().setLocation("http://localhost:8081/login");
             return;
         }
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
         String encodedEmail = URLEncoder.encode(Objects.requireNonNull(email), StandardCharsets.UTF_8);
-        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
-        ObjectMapper mapper = new ObjectMapper();
-        User user = mapper.convertValue(data.getNode(), User.class);
-        
+        User user = null;
+        ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null, token);
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                ObjectMapper mapper = new ObjectMapper();
+                user = mapper.convertValue(data.getNode(), User.class);
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+
         firstname.setValue(user.getFirstname());
         lastname.setValue(user.getLastname());
         defaultStreetName.setValue(user.getDefaultStreetName());
@@ -193,7 +204,6 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
         defaultCity.setValue(user.getDefaultCity());
         
         JsonNode addressesNode = getAddresses(encodedEmail);
-        System.out.println(addressesNode);
         
         ObjectMapper addressObjectMapper = new ObjectMapper();
         List<Address> addresses = new ArrayList<>();
@@ -280,7 +290,7 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
 			}
             
             purchaseRequest.setPurchaseItems(checkoutPurchaseItems);
-        	ResponseData responseData = RestClient.requestHttp("POST", "http://localhost:8080/private/purchase/product", purchaseRequest, CheckoutRequest.class);
+        	ResponseData responseData = RestClient.requestHttp("POST", "http://localhost:8080/private/purchase/product", purchaseRequest, CheckoutRequest.class, token);
             try {
                 if (responseData.getConnection().getResponseCode() != 201) {
                     if (responseData.getNode().get("message").toString().contains("Quantity cannot go below 0")){
@@ -291,7 +301,7 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
                 } else {
                     UI.getCurrent().navigate("orderplaced");
                 }
-            } catch (IOException ex) {
+            } catch (IOException | NullPointerException ex) {
                 HelperUtil.showNotification("Error occurred while purchasing the Product", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
                 throw new RuntimeException(ex);
             }
@@ -313,8 +323,19 @@ public class CheckoutView extends Composite<VerticalLayout> implements BeforeEnt
     }
     
     private JsonNode getAddresses(String email) {
-		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + email, null, null);
-		return data.getNode();
+        String token = (String) VaadinSession.getCurrent().getAttribute("token");
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/addresses?email=" + email, null, null, token);
+        try {
+            if (data.getConnection().getResponseCode() != 200) {
+                HelperUtil.showNotification("Error occurred while processing user Address", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            } else {
+                return data.getNode();
+            }
+        } catch (IOException e) {
+            HelperUtil.showNotification("Error occurred while processing user Address", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
+            throw new RuntimeException(e);
+        }
+		return null;
     }
     
     private H3 createHeader(String text) {

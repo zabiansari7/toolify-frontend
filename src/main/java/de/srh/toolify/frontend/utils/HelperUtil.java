@@ -112,7 +112,8 @@ public class HelperUtil {
 
 	public static PurchaseHistory getPurchaseByInvoice(int invoice) {
 		ObjectMapper mapper = HelperUtil.getObjectMapper();
-		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchase/history/" + invoice, null, null);
+		String token = (String) VaadinSession.getCurrent().getAttribute("token");
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchase/history/" + invoice, null, null, token);
 		try {
 			if (data.getConnection().getResponseCode() != 200) {
 				HelperUtil.showNotification("Error occurred while downloading invoice", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);
@@ -137,7 +138,8 @@ public class HelperUtil {
 			return new User();
 		}
 		String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
-		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
+		String token = (String) VaadinSession.getCurrent().getAttribute("token");
+		ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null, token);
 		try {
 			if (data.getConnection().getResponseCode() != 200) {
 				HelperUtil.showNotification("Error occurred while processing user information", NotificationVariant.LUMO_ERROR, Notification.Position.TOP_CENTER);

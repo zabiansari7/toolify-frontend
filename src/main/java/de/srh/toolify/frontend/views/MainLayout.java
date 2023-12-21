@@ -138,7 +138,6 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         });
         layoutRow.setJustifyContentMode(JustifyContentMode.END);
         layout.add(div, layoutRow);
-
         //header.add(layout, nav); //Hide Default Menu Items
         header.add(layout);
         return header;
