@@ -30,15 +30,21 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import de.srh.toolify.frontend.client.RestClient;
 import de.srh.toolify.frontend.data.*;
+import de.srh.toolify.frontend.error.AccessDeniedView;
 import de.srh.toolify.frontend.utils.HelperUtil;
 import de.srh.toolify.frontend.utils.PDFGen;
 import de.srh.toolify.frontend.views.MainLayout;
+import de.srh.toolify.frontend.views.login.LoginView;
+import elemental.json.Json;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -49,7 +55,7 @@ import java.util.Objects;
 @PageTitle("AdminProfile | Toolify")
 @Route(value = "admin", layout = MainLayout.class)
 @Uses(Icon.class)
-public class AdminProfileTabs extends Composite<VerticalLayout> {
+public class AdminProfileTabs extends Composite<VerticalLayout> implements BeforeEnterObserver {
     private static final long serialVersionUID = 1L;
 
     Binder<User> binder = new Binder<>(User.class);
@@ -94,8 +100,6 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     HorizontalLayout layoutRow6 = new HorizontalLayout();
     Button saveButton = new Button();
     Button cancelButton = new Button();
-    
-    String emailFromSession = HelperUtil.getEmailFromSession();
     Category categorySelectValue;
 
 	public AdminProfileTabs() {
@@ -213,7 +217,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
         adminDetailsMain.add(adminDetailsHorizontalLayout);
         adminDetailsHorizontalLayout.add(adminDetailsEditButton);
         
-        User admin = getUserByEmail();
+        User admin = HelperUtil.getUserByEmail();
         binder.setBean(admin);
         binder.setReadOnly(true);
 
@@ -244,7 +248,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
     			return;
     		}        	
         	String encodedEmail;
-            encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
+            encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
 
             EditUser editUser = prepareEditUser();
         	ResponseData data = RestClient.requestHttp("PUT", "http://localhost:8080/private/user?email=" + encodedEmail, editUser, EditUser.class);
@@ -287,8 +291,15 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
 		notification.addThemeVariants(variant);
     }
 	
-	private User getUserByEmail() {
-    	String encodedEmail = URLEncoder.encode(emailFromSession, StandardCharsets.UTF_8);
+	/*private User getUserByEmail() {
+        String email;
+        try {
+            email = HelperUtil.getEmailFromSession();
+        } catch (Exception e) {
+            UI.getCurrent().navigate(LoginView.class);
+            return new User();
+        }
+    	String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
         ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/user?email=" + encodedEmail, null, null);
         try {
             if (data.getConnection().getResponseCode() != 200) {
@@ -302,7 +313,7 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
             throw new RuntimeException(e);
         }
         return null;
-	}
+	}*/
 
 	private VerticalLayout getAdminOrdersLayout() {    	
 		VerticalLayout main = new VerticalLayout();
@@ -1159,5 +1170,19 @@ public class AdminProfileTabs extends Composite<VerticalLayout> {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        try {
+            HelperUtil.getEmailFromSession();
+        } catch (Exception e) {
+            event.forwardTo(LoginView.class);
+            return;
+        }
+        JsonNode user = (JsonNode) VaadinSession.getCurrent().getAttribute("user");
+        if (!user.get("hasRole").toString().contains("ROLE_ADMIN")) {
+            event.forwardTo(AccessDeniedView.class);
+        }
     }
 }

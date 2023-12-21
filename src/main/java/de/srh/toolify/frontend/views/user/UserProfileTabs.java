@@ -98,8 +98,8 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
 
     private void setTabSheetSampleData(TabSheet tabSheet, Binder<User> binder) {
         tabSheet.add("User Details", new Div(getUserDetailsLayout(binder))).addClassName("tabStyle");
-        //tabSheet.add("Order History", new Div(getUserOrdersLayout())).addClassName("tabStyle");
-        //tabSheet.add("Manage Address", new Div(getManageAddressesLayout())).addClassName("tabStyle");
+        tabSheet.add("Order History", new Div(getUserOrdersLayout())).addClassName("tabStyle");
+        tabSheet.add("Manage Address", new Div(getManageAddressesLayout())).addClassName("tabStyle");
         ;
     }
 
@@ -245,10 +245,7 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
                 HelperUtil.showNotification("Error occurred while updating the User !!", NotificationVariant.LUMO_ERROR, Position.TOP_CENTER);
                 throw new RuntimeException(ex);
             }
-
-
         });
-
         return userDetailsMain;
     }
 
@@ -460,7 +457,14 @@ public class UserProfileTabs extends Composite<VerticalLayout> implements Before
     }
 
     private JsonNode prepareOrderContent() {
-        String encodedEmail = URLEncoder.encode(HelperUtil.getEmailFromSession(), StandardCharsets.UTF_8);
+        String email;
+        try {
+            email = HelperUtil.getEmailFromSession();
+        } catch (Exception e) {
+            UI.getCurrent().navigate(LoginView.class);
+            return null;
+        }
+        String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
         String token = (String) VaadinSession.getCurrent().getAttribute("token");
         ResponseData data = RestClient.requestHttp("GET", "http://localhost:8080/private/purchases/history?email=" + encodedEmail, null, null, token);
         try {
